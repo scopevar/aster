@@ -22,19 +22,14 @@
   flex: 1;
   min-width: 0;
 }
-.plugin-manager-symbol {
-  display: grid;
-  place-items: center;
-  flex: 0 0 36px;
-  height: 36px;
-  border-radius: 12px;
-  color: var(--secondary-text);
-  background: var(--selected);
-}
 .plugin-manager-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
+}
+.plugin-manager-actions [aria-busy="true"] {
+  opacity: 1;
 }
 .plugin-manager-empty {
   display: flex;

@@ -46,7 +46,7 @@ test("saved API keys support attachments, cancellation and restart without leaki
       .click();
     const view = page.getByLabel("模型与连接配置", { exact: true });
     await view.getByRole("button", { name: "添加连接", exact: true }).click();
-    const add = page.getByRole("dialog", { name: "添加连接", exact: true });
+    const add = page.locator(".connection-add-dialog");
     await add.getByRole("button", { name: /自定义配置/ }).click();
     await add.getByLabel("连接名称", { exact: true }).fill("key-provider");
     await add.getByLabel("模型提供商", { exact: true }).fill("fixture");

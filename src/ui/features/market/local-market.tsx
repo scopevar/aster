@@ -51,14 +51,6 @@ export function LocalMarket({
               <h3>你的本地内容</h3>
               <p>浏览 Bot、安装插件，用模板文件分享配置。</p>
             </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              onPress={() => setTemplateId("")}
-            >
-              <Icon name="download" size={16} />
-              导入模板文件
-            </Button>
           </div>
           <Tabs
             className="local-market-tabs"
@@ -118,31 +110,25 @@ export function LocalMarket({
             <Tabs.Panel id="plugins" className="local-market-panel">
               {bot ? (
                 <>
-                  <div className="local-market-plugin-target">
-                    <span>安装到 Bot</span>
-                    <SettingsSelect
-                      label="安装到 Bot"
-                      value={bot.id}
-                      options={bots.map((item) => ({
-                        value: item.id,
-                        label: item.name,
-                      }))}
-                      onChange={setBotId}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onPress={() => onOpenBot(bot.id)}
-                    >
-                      打开会话
-                      <Icon name="chevron" size={14} />
-                    </Button>
-                  </div>
                   <PluginManager
                     key={bot.id}
                     botId={bot.id}
                     query={query}
                     onChanged={onChanged}
+                    target={
+                      <div className="local-market-plugin-target">
+                        <span>安装到 Bot</span>
+                        <SettingsSelect
+                          label="安装到 Bot"
+                          value={bot.id}
+                          options={bots.map((item) => ({
+                            value: item.id,
+                            label: item.name,
+                          }))}
+                          onChange={setBotId}
+                        />
+                      </div>
+                    }
                   />
                   <LocalPluginSkills
                     skills={state.skills.filter(

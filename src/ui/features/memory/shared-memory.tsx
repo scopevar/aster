@@ -211,12 +211,13 @@ export function SharedMemoryManager({
     >
       <div className="memory-manager">
         <div className="memory-description">
+          <h1>{scope.kind === "account" ? "本地记忆" : "项目记忆"}</h1>
           <p>
             {scope.kind === "account"
-              ? "此账户的 Bot 共用这些记忆。"
+              ? "所有 Bot 共用的偏好与信息。"
               : "此项目的 Bot 共用这些记忆。"}
+            不改写聊天记录，忘记后不再使用。
           </p>
-          <p>不改写聊天记录，忘记后不再使用。</p>
         </div>
         {readError && (
           <p role="alert" className="error">
@@ -240,12 +241,11 @@ export function SharedMemoryManager({
         )}
         <div className="memory-columns">
           <section className="settings-section" aria-label="共享记忆条目">
-            <h2>记忆列表</h2>
-            <div className="setting-group memory-list">
+            <div className="memory-list-heading">
+              <h2>记忆列表</h2>
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="sm"
-                fullWidth
                 type="button"
                 isDisabled={disabled}
                 onPress={() => {
@@ -256,13 +256,18 @@ export function SharedMemoryManager({
                 <Icon name="plus" size={14} />
                 新增记忆
               </Button>
+            </div>
+            <div className="setting-group memory-list">
               {!view && !readError && (
                 <p className="memory-empty" role="status">
                   正在读取共享记忆…
                 </p>
               )}
               {view && view.entries.length === 0 && (
-                <p className="memory-empty">还没有记忆，添加一条吧。</p>
+                <div className="memory-empty">
+                  <Icon name="book" size={24} />
+                  <p>还没有记忆，添加一条吧。</p>
+                </div>
               )}
               {view?.entries.map((item: SharedMemoryEntry) => (
                 <Button
@@ -285,13 +290,12 @@ export function SharedMemoryManager({
                 >
                   <strong>{item.topic}</strong>
                   <span>{item.content}</span>
-                  <small>已保存</small>
                 </Button>
               ))}
             </div>
           </section>
           <section className="settings-section" aria-label="记忆内容">
-            <h2>记忆内容</h2>
+            <h2>{draft.revision ? "编辑记忆" : "新增记忆"}</h2>
             <form
               className="setting-group memory-editor"
               onSubmit={(e) => {

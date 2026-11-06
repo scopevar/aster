@@ -135,7 +135,7 @@ test("an empty local market is reachable from navigation and offers local import
     market.getByText("还没有本地模板", { exact: true }),
   ).toBeVisible();
   await market
-    .getByRole("button", { name: "导入模板文件", exact: true })
+    .getByRole("button", { name: "管理本地模板", exact: true })
     .click();
   const templates = page.getByRole("dialog", { name: "本地模板", exact: true });
   await expect(

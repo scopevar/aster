@@ -95,6 +95,8 @@
   background: var(--panel);
 }
 .routine-columns nav button {
+  width: 100%;
+  flex-shrink: 0;
   max-width: 100%;
   white-space: normal;
   overflow-wrap: anywhere;
@@ -110,7 +112,7 @@
 .routine-columns nav button:first-child {
   flex-direction: row;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 8px;
 }
 .routine-list-empty {
@@ -201,6 +203,9 @@
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
+  .routine-columns nav button {
+    width: auto;
+  }
   .routine-list-empty {
     padding: 0 8px;
   }
@@ -262,10 +267,7 @@
 }
 .routine-scroll form > fieldset {
   gap: 18px;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
+  padding: 8px 0 16px;
   font-size: 13px;
 }
 .routine-detail-tabs > .tabs__list {
@@ -300,7 +302,7 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: 4px 0 16px;
+  padding: 4px 12px 16px 0;
   margin: 0;
   width: 100%;
   scrollbar-gutter: stable;
@@ -355,6 +357,9 @@
     border-bottom: 1px solid var(--line);
     background: var(--surface);
     max-height: 96px;
+  }
+  .routine-dialog .routine-columns nav button {
+    width: auto;
   }
   .routine-dialog .routine-columns nav p {
     margin: 0;

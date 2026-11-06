@@ -179,6 +179,11 @@
   padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
 }
+.jev-settings .connection-test-actions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
 .provider-picker-body {
   display: grid;
   grid-template-columns: 112px minmax(0, 1fr);

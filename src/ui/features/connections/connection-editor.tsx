@@ -82,14 +82,6 @@ export function ConnectionEditor({
       }}
     >
       <fieldset disabled={busy}>
-        {isNew && (
-          <header className="connection-editor-heading">
-            <div>
-              <h1>{preset ? `添加 ${preset.name}` : "添加自定义供应商"}</h1>
-              <p>连接兼容的模型 API，为 Pi Agent 配置可用模型。</p>
-            </div>
-          </header>
-        )}
         <section
           className="settings-section"
           aria-labelledby="connection-basic"

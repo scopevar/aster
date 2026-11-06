@@ -435,6 +435,7 @@ export function ModelConnections() {
       {adding && (
         <AddConnectionDialog
           choosing={screen === "picker"}
+          providerName={editor?.preset?.name}
           busy={busy}
           onClose={back}
         >

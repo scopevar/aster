@@ -1,8 +1,8 @@
 import { Checkbox } from "../../components/checkbox.js";
 import { Icon } from "../../components/icons.js";
 import { IconButton } from "../../components/icon-button.js";
-import { Button, Input } from "@heroui/react";
-import { useEffect, useRef, useState } from "react";
+import { Button, Input, Spinner } from "@heroui/react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   pluginsResponseSchema,
   type PluginPreview,
@@ -18,10 +18,12 @@ export function PluginManager({
   botId,
   onChanged,
   query = "",
+  target,
 }: {
   botId: string | null;
   onChanged(): void;
   query?: string;
+  target?: ReactNode;
 }) {
   const [view, setView] = useState<PluginsResponse>({
     plugins: [],
@@ -31,6 +33,7 @@ export function PluginManager({
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(!!botId);
+  const [refreshing, setRefreshing] = useState(false);
   const [variables, setVariables] = useState<Record<string, string>>({});
   const [enableTools, setEnableTools] = useState(false),
     [editing, setEditing] = useState<string | null>(null);
@@ -74,8 +77,14 @@ export function PluginManager({
   const run = async (request: PluginsRequest) => {
     if (locked.current) return;
     const version = ++requestVersion.current;
-    locked.current = true;
-    setBusy(true);
+    const reading = request.action === "list";
+    // Reading keeps the current content and mutation controls stable. A mutation
+    // can supersede the read through the existing request version check.
+    if (reading) setRefreshing(true);
+    else {
+      locked.current = true;
+      setBusy(true);
+    }
     setError("");
     try {
       const value = pluginsResponseSchema.parse(await desktop.plugins(request));
@@ -104,8 +113,11 @@ export function PluginManager({
       )
         setError(errorMessage(failure));
     } finally {
-      locked.current = false;
-      if (alive.current) setBusy(false);
+      if (!reading) locked.current = false;
+      if (alive.current) {
+        if (reading) setRefreshing(false);
+        else setBusy(false);
+      }
     }
   };
   const fields = (names: string[]) =>
@@ -169,15 +181,14 @@ export function PluginManager({
   return (
     <section className="plugin-manager" aria-label="本地插件管理">
       <div className="plugin-manager-heading">
-        <span className="plugin-manager-symbol">
-          <Icon name="skill" size={18} />
-        </span>
-        <div>
-          <div className="plugin-manager-title">
-            <h3>已安装插件</h3>
-            <PluginHelp />
+        {target ?? (
+          <div>
+            <div className="plugin-manager-title">
+              <h3>已安装插件</h3>
+              <PluginHelp />
+            </div>
           </div>
-        </div>
+        )}
         <div className="plugin-manager-actions">
           {botId && (
             <Button
@@ -195,12 +206,17 @@ export function PluginManager({
           {botId && (
             <IconButton
               aria-label="刷新插件列表"
-              isDisabled={busy || loading}
+              aria-busy={refreshing}
+              isDisabled={busy || loading || refreshing}
               onPress={() => {
                 void run({ action: "list", botId });
               }}
             >
-              <Icon name="refresh" size={16} />
+              {refreshing ? (
+                <Spinner size="sm" />
+              ) : (
+                <Icon name="refresh" size={16} />
+              )}
             </IconButton>
           )}
         </div>

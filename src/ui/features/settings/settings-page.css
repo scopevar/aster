@@ -68,6 +68,11 @@
   font-size: 12px;
   line-height: 1.6;
 }
+.settings-navigation button[aria-current="page"] {
+  --button-bg: var(--navigation-selected);
+  --button-bg-hover: var(--navigation-hover);
+  --button-bg-pressed: var(--navigation-hover);
+}
 .settings-panel {
   display: flex;
   flex-direction: column;

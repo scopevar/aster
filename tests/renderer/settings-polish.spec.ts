@@ -37,6 +37,7 @@ const sandbox = sandboxSettingsStatusSchema.parse({
 for (const colorScheme of ["light", "dark"] as const) {
   for (const size of [
     { width: 1314, height: 963 },
+    { width: 1052, height: 769 },
     { width: 760, height: 550 },
   ]) {
     test(`settings preserve focus and layout in ${colorScheme} at ${size.width}px`, async ({
@@ -120,10 +121,7 @@ for (const colorScheme of ["light", "dark"] as const) {
         await settings
           .getByRole("button", { name: "添加连接", exact: true })
           .click();
-        const dialog = page.getByRole("dialog", {
-          name: "添加连接",
-          exact: true,
-        });
+        const dialog = page.locator(".connection-add-dialog");
         await expect
           .soft(
             dialog.getByRole("searchbox", { name: "搜索供应商", exact: true }),
@@ -163,6 +161,10 @@ for (const colorScheme of ["light", "dark"] as const) {
           path: info.outputPath("connection-editor.png"),
           animations: "disabled",
         });
+        const heading = dialog.getByRole("heading", {
+          name: "添加自定义供应商",
+        });
+        const headingBefore = await heading.boundingBox();
         const testing = dialog.getByRole("button", {
           name: "真实推理测试",
           exact: true,
@@ -181,6 +183,9 @@ for (const colorScheme of ["light", "dark"] as const) {
           path: info.outputPath("connection-validation.png"),
           animations: "disabled",
         });
+        // Scrolling a long form must leave its title and close control in place.
+        expect.soft(await heading.boundingBox()).toEqual(headingBefore);
+        await expect.soft(heading).toBeInViewport({ ratio: 1 });
         await dialog
           .getByRole("button", { name: "关闭添加连接", exact: true })
           .click();
@@ -190,6 +195,13 @@ for (const colorScheme of ["light", "dark"] as const) {
           .click();
         await page.screenshot({
           path: info.outputPath("memory-scopes.png"),
+          animations: "disabled",
+        });
+        await settings
+          .getByRole("button", { name: "管理本地记忆", exact: true })
+          .hover();
+        await page.screenshot({
+          path: info.outputPath("memory-scopes-hover.png"),
           animations: "disabled",
         });
         await settings
@@ -216,6 +228,22 @@ for (const colorScheme of ["light", "dark"] as const) {
           .getByRole("button", { name: "新增记忆", exact: true })
           .click();
         await expect(topic).toBeFocused();
+        await topic.fill("回复偏好");
+        await settings
+          .getByRole("textbox", { name: "共享记忆内容" })
+          .fill("优先用中文回复，先说明结论，再补充必要细节。");
+        await settings
+          .getByRole("button", { name: "保存记忆", exact: true })
+          .click();
+        const memoryEntry = settings
+          .getByRole("region", { name: "共享记忆条目" })
+          .getByRole("button", { name: /回复偏好/ });
+        await expect(memoryEntry).toHaveAttribute("aria-pressed", "true");
+        await memoryEntry.scrollIntoViewIfNeeded();
+        await page.screenshot({
+          path: info.outputPath("memory-saved.png"),
+          animations: "disabled",
+        });
 
         await settings
           .getByRole("button", { name: "沙箱", exact: true })
@@ -301,6 +329,16 @@ for (const colorScheme of ["light", "dark"] as const) {
           path: info.outputPath("jev-settings-actions.png"),
           animations: "disabled",
         });
+        const jevSave = await settings
+          .getByRole("button", { name: "保存 Jev 配置" })
+          .boundingBox();
+        const jevInput = await settings
+          .getByRole("textbox", { name: "Jev API Key" })
+          .boundingBox();
+        if (!jevSave || !jevInput) throw Error("Missing Jev controls");
+        expect
+          .soft(jevSave.x + jevSave.width)
+          .toBeCloseTo(jevInput.x + jevInput.width, 0);
         expect(renderer.unhandled).toEqual([]);
       } finally {
         releaseSave();
