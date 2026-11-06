@@ -1,0 +1,166 @@
+.skill-input {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.skill-input > textarea {
+  width: 100%;
+}
+.skill-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border-radius: 6px;
+  background: var(--hover);
+  color: var(--text);
+  font-size: 12px;
+  padding: 3px 5px;
+}
+.skill-chip button {
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.skill-menu {
+  position: fixed;
+  width: 360px;
+  max-width: calc(100vw - 16px);
+  max-height: min(300px, calc(100vh - 16px));
+  overflow: auto;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--overlay-shadow);
+  background: var(--background);
+  z-index: 40;
+}
+.skill-menu > button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  text-align: left;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 18px;
+}
+.skill-menu > button[aria-selected="true"],
+.skill-menu > button:hover {
+  background: var(--hover);
+}
+.skill-menu strong {
+  font-weight: 400;
+  white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.skill-menu-description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  flex: 1;
+}
+.skill-menu small {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.composer-action-icon {
+  width: 14px;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.skill-manager {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  min-height: 430px;
+  max-height: 70vh;
+}
+.skill-list {
+  overflow: auto;
+  padding: 15px;
+  border-right: 1px solid var(--line);
+}
+.skill-list > input {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  width: 100%;
+}
+.skill-list > button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 8px 0;
+}
+.skill-list > button.selected {
+  background: var(--hover);
+}
+.skill-list strong,
+.skill-list span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.skill-list span {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.skill-form {
+  padding: 20px;
+  overflow: auto;
+}
+.skill-form label {
+  display: block;
+  color: var(--secondary-text);
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+.skill-form input,
+.skill-form textarea,
+.skill-form select {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--background);
+  font: inherit;
+  color: var(--text);
+}
+.skill-form textarea {
+  min-height: 160px;
+  resize: vertical;
+}
+.skill-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+.skill-preview {
+  padding: 20px;
+  max-height: 70vh;
+  overflow: auto;
+}
+.skill-preview pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  line-height: 1.6;
+}

@@ -1,0 +1,21 @@
+.navigation-account {
+  width: 40px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+.navigation-account-menu {
+  position: relative;
+}
+.navigation-account-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 29px;
+  height: 29px;
+  border-radius: 50%;
+  background: var(--accent-surface);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+}

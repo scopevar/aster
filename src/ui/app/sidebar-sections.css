@@ -1,0 +1,91 @@
+.sidebar-section {
+  margin-top: 8px;
+  border-radius: 8px;
+}
+.section-heading {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 6px 0 10px;
+  gap: 4px;
+}
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+  color: var(--muted);
+  text-align: left;
+  font-size: 12px;
+  padding: 6px 0;
+}
+.section-title > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.section-title small {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.section-title i {
+  display: flex;
+}
+.section-title i.expanded {
+  transform: rotate(90deg);
+}
+.section-heading .section-actions {
+  width: 24px;
+  height: 24px;
+  opacity: 0;
+}
+.section-heading:hover .section-actions,
+.section-heading:focus-within .section-actions {
+  opacity: 1;
+}
+.section-heading input {
+  min-width: 0;
+  width: 100%;
+  height: 26px;
+  font-size: 12px;
+  padding: 3px 5px;
+}
+.section-empty {
+  color: var(--muted);
+  font-size: 12px;
+  padding: 10px;
+  margin: 0;
+}
+.sidebar-section.drop-target {
+  outline: 1px solid var(--muted);
+  background: var(--hover);
+}
+.collapsed .sidebar-section {
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  padding-top: 6px;
+  margin-top: 6px;
+}
+.section-error {
+  font-size: 12px;
+  padding: 8px;
+  color: var(--danger);
+  overflow-wrap: anywhere;
+}
+.section-error button {
+  display: block;
+  text-decoration: underline;
+  margin-top: 6px;
+}
+.context-submenu {
+  width: 220px;
+  max-height: min(360px, calc(100vh - 16px));
+  overflow: auto;
+}
+.menu-check {
+  width: 15px;
+  display: inline-flex;
+  justify-content: center;
+  flex: none;
+}

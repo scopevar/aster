@@ -1,0 +1,39 @@
+.template-actions-menu {
+  width: 220px;
+  max-width: calc(100vw - 16px);
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--overlay-shadow);
+}
+.template-actions-menu .menu-item {
+  min-height: 36px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  gap: 10px;
+  font-size: 13px;
+}
+.template-request-error {
+  border-top: 1px solid var(--line);
+  margin-top: 6px;
+  padding-top: 6px;
+}
+.template-request-error p {
+  color: var(--danger);
+  font-size: 12px;
+  padding: 6px 8px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.template-request-indicator {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--danger);
+  top: 2px;
+  right: 2px;
+}
+.template-actions-trigger {
+  position: relative;
+}

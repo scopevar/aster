@@ -1,0 +1,48 @@
+.template-message-card {
+  display: grid;
+  gap: 16px;
+  width: 360px;
+  max-width: 100%;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.template-message-card header,
+.template-message-card footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.template-message-card header > div:last-child {
+  min-width: 0;
+}
+.template-message-card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.template-message-card header span,
+.template-message-card small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.template-message-card .template-cover,
+.template-message-card .avatar {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+.template-message-card p {
+  color: var(--secondary-text);
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.template-message-card footer {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}

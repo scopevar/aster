@@ -1,0 +1,103 @@
+.question-card {
+  width: 640px;
+  max-width: 100%;
+  border-radius: 18px;
+  background: var(--bubble);
+  padding: 12px;
+  font-size: var(--conversation-font-size);
+  line-height: 1.45;
+}
+.question-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.question-heading strong {
+  flex: 1;
+  font-weight: 600;
+}
+.question-skip {
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+}
+.question-skip:hover {
+  background: var(--selected);
+}
+.question-options {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.question-options button {
+  height: auto;
+  border-radius: 0;
+  white-space: normal;
+  justify-content: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  min-height: 38px;
+  width: 100%;
+  background: var(--option);
+  text-align: left;
+}
+.question-options button + button {
+  border-top: 1px solid var(--line-strong);
+}
+.question-options button:hover:not(:disabled) {
+  background: var(--selected);
+}
+.question-options span {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--secondary-text);
+  background: var(--control-hover);
+  border-radius: 3px;
+  width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+}
+.question-custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.question-custom input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--line-strong);
+  background: var(--background);
+  border-radius: 8px;
+  padding: 6px 10px;
+  height: 32px;
+}
+.question-custom input:focus {
+  outline: 1px solid var(--focus);
+}
+.question-custom button {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-radius: 8px;
+  height: 32px;
+  padding: 4px 10px;
+}
+.question-result {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--secondary-text);
+}
+.question-card p[role="alert"] {
+  font-size: 12px;
+  color: var(--danger);
+  margin: 8px 0 0;
+}

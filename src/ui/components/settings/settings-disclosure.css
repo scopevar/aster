@@ -1,0 +1,43 @@
+.settings-disclosure {
+  min-width: 0;
+  border: 1px solid var(--separator);
+  border-radius: var(--field-radius);
+  background: var(--surface);
+}
+.settings-disclosure .disclosure__heading {
+  margin: 0;
+}
+.settings-disclosure .app-disclosure-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: auto;
+  min-height: 48px;
+  padding: var(--settings-space-row) var(--settings-space-content);
+  border-radius: var(--field-radius);
+  color: var(--foreground);
+  text-align: left;
+  white-space: normal;
+}
+.settings-disclosure .app-disclosure-trigger:hover {
+  background: var(--default);
+}
+.settings-disclosure .app-disclosure-trigger[data-pressed="true"] {
+  background: var(--default-hover);
+}
+.settings-disclosure-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.settings-disclosure .disclosure__body {
+  padding: 0;
+}
+.settings-disclosure-body {
+  padding: var(--settings-space-row) var(--settings-space-content)
+    var(--settings-space-content);
+  font-size: 13px;
+  line-height: 1.6;
+}

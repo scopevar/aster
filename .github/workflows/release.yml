@@ -1,0 +1,137 @@
+name: Build and release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Daily at 08:00 Asia/Shanghai (00:00 UTC).
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Build preview, publish Nightly, or promote a tested Nightly (main only)
+        type: choice
+        default: preview
+        options: [preview, nightly, stable]
+      nightly_version:
+        description: Exact published Nightly version to promote (required for stable)
+        type: string
+      version:
+        description: Optional stable X.Y.Z override (default is the Nightly base)
+        type: string
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+# Never cancel a run that may already be publishing immutable artifacts.
+concurrency:
+  group: aster-release-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    needs: plan
+    if: needs.plan.outputs.source != ''
+    uses: ./.github/workflows/ci.yml
+    with:
+      source: ${{ needs.plan.outputs.source }}
+
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      publish: ${{ steps.plan.outputs.publish }}
+      plan: ${{ steps.plan.outputs.plan }}
+      source: ${{ steps.plan.outputs.source }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Plan shared version and public configuration
+        id: plan
+        env:
+          MODE: ${{ github.event_name == 'schedule' && 'nightly' || inputs.channel || 'preview' }}
+          NIGHTLY_VERSION: ${{ inputs.nightly_version }}
+          STABLE_VERSION: ${{ inputs.version }}
+        run: |
+          if [[ "$MODE" != preview && "$GITHUB_REF" != refs/heads/main ]]; then
+            echo 'Only main may publish a GitHub Release.' >&2
+            exit 1
+          fi
+          pnpm release --ci plan "$MODE"
+
+  build:
+    needs: plan
+    if: github.event_name != 'push' && needs.plan.outputs.source != ''
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    uses: ./.github/workflows/build.yml
+    with:
+      os: ${{ matrix.os }}
+      plan: ${{ needs.plan.outputs.plan }}
+      publish: ${{ needs.plan.outputs.publish == 'true' }}
+
+  publish:
+    needs: [check, plan, build]
+    if: needs.plan.outputs.publish == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    environment: production
+    permissions:
+      contents: write
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.plan.outputs.source }}
+      - uses: ./.github/actions/setup
+      - name: Download Linux installers and update metadata
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: installer-Linux-x64
+          path: release/ci/linux-x64
+      - name: Download Windows installer and update metadata
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: installer-Windows-x64
+          path: release/ci/win32-x64
+      - name: Configure release identity
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+      - name: Publish existing artifacts and version record
+        env:
+          ASTER_CI_PLAN: ${{ needs.plan.outputs.plan }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: pnpm release --ci publish
+
+  sync_version:
+    needs: publish
+    if: inputs.channel == 'stable'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - name: Record latest stable version on the release branch
+        env:
+          ASTER_RELEASE_BRANCH: ${{ github.ref_name }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          pnpm release --ci sync-version

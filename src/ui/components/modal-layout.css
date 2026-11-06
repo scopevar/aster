@@ -1,0 +1,238 @@
+.modal {
+  /* Overlay controls must not inherit Electron's native window drag regions. */
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--line-strong);
+  border-radius: 17px;
+  background: var(--background);
+  padding: 0;
+  width: 450px;
+  max-width: calc(100vw - 60px);
+  max-height: calc(100vh - 80px);
+  box-shadow: var(--overlay-shadow);
+  color: var(--text);
+  overflow-y: auto;
+}
+.app-modal-backdrop {
+  -webkit-app-region: no-drag;
+  background: var(--backdrop);
+}
+.modal.search-palette {
+  width: 560px;
+  height: 454px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.palette-input {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 16px;
+  color: var(--secondary-text);
+}
+.palette-input input {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 0;
+  font-size: 13px;
+}
+.palette-input input:focus-visible {
+  outline: none;
+}
+.palette-results {
+  height: calc(100% - 52px);
+  padding: 6px 8px;
+  overflow: auto;
+}
+.palette-results > button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+  min-height: 49px;
+  padding: 10px;
+  border-radius: 13px;
+  text-align: left;
+}
+.palette-results > button[aria-selected="true"] {
+  background: var(--selected);
+}
+.palette-results > button > span:last-child {
+  min-width: 0;
+}
+.palette-results strong {
+  font-size: 13px;
+  font-weight: 400;
+  display: block;
+}
+.palette-results small {
+  color: var(--muted);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 3px;
+  font-size: 12px;
+}
+.palette-action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 21px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--muted);
+}
+.palette-empty {
+  color: var(--faint);
+  text-align: center;
+  font-size: 13px;
+  padding-top: 27px;
+}
+.modal.wide {
+  width: 880px;
+}
+.modal > header {
+  display: flex;
+  padding: 16px 56px 16px 20px;
+  min-height: 56px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+}
+.modal > header h2 {
+  font-size: 16px;
+}
+.create-form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+.create-form > .avatar {
+  align-self: center;
+  height: 48px;
+  width: 48px;
+  margin-top: 16px;
+  gap: 9px;
+}
+.create-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.create-form textarea {
+  height: 110px;
+  resize: vertical;
+}
+.create-form .machine-choice-field .settings-select {
+  width: 100%;
+}
+.create-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.create-pending {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.create-bot-form {
+  gap: 12px;
+  padding: 16px 24px;
+  min-height: 0;
+  overflow-y: auto;
+}
+.modal:has(> .create-bot-form) {
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+.modal:has(> .create-bot-form) > header {
+  flex-shrink: 0;
+}
+.modal:has(> .create-bot-form) .settings-select-popover {
+  z-index: 1;
+}
+.create-bot-form > .avatar {
+  width: 32px;
+  height: 32px;
+  margin-top: 0;
+}
+.create-bot-form textarea {
+  height: 72px;
+  min-height: 72px;
+}
+.create-machine-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+.create-machine-fields > p {
+  grid-column: 1 / -1;
+}
+.create-machine-fields label {
+  min-width: 0;
+  font-size: 13px;
+}
+.create-machine-fields .bot-model-choice small:not(.error) {
+  display: none;
+}
+.create-actions > .create-pending {
+  flex: 1;
+  text-align: left;
+}
+.create-actions > .button {
+  flex-shrink: 0;
+}
+.primary {
+  padding: 10px 17px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.secondary {
+  padding: 7px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: var(--background);
+  font-size: 12px;
+}
+.secondary:hover {
+  background: var(--control);
+}
+.error {
+  color: var(--danger);
+  font-size: 12px;
+}
+
+.app-modal-container {
+  padding: 0;
+}
+.app-modal-heading {
+  flex: 1;
+  min-width: 0;
+}
+.modal > .modal__close-trigger {
+  top: 12px;
+  right: 12px;
+}
+.modal > .modal__body {
+  padding: 20px;
+}
+.modal > .modal__footer {
+  padding: 0 20px 20px;
+}
+.modal.delete-confirm > header {
+  padding: 0;
+  min-height: 0;
+  border: 0;
+}
+.modal.connection-delete-dialog {
+  width: 384px;
+}

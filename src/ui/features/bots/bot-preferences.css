@@ -1,0 +1,55 @@
+.bot-details.settings {
+  padding: 0 16px 20px;
+}
+.bot-details .settings-avatar {
+  margin: 20px 0;
+}
+.settings-avatar .avatar-edit-trigger {
+  width: 60px;
+  height: 60px;
+  min-width: 0;
+}
+.bot-preferences .settings-select {
+  width: 144px;
+}
+.bot-settings-form fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.bot-settings-form fieldset > label > input {
+  height: 36px;
+}
+.bot-settings-form fieldset > label > textarea {
+  height: 80px;
+  resize: none;
+}
+.bot-settings-form fieldset > label {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+.bot-settings-form .preference-label {
+  color: var(--muted);
+  line-height: 16px;
+}
+.bot-settings-form .bot-preferences {
+  margin-top: 8px;
+  padding: 8px 12px;
+}
+.bot-settings-form .bot-preferences > div:last-child {
+  min-height: 44px;
+}
+.preferences-recovery {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--secondary-text);
+}
+.preferences-recovery p {
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}

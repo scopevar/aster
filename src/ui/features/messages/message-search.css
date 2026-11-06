@@ -1,0 +1,80 @@
+.message-search {
+  display: grid;
+  gap: 12px;
+  min-width: min(640px, 78vw);
+  max-height: 75vh;
+  overflow: hidden;
+}
+.message-search form {
+  display: flex;
+  gap: 8px;
+}
+.message-search input {
+  min-width: 0;
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.message-search form button,
+.message-search > button {
+  padding: 9px 14px;
+  border-radius: 8px;
+}
+.message-search .search-scope {
+  color: var(--muted);
+}
+.message-search .search-error {
+  color: var(--danger);
+}
+.message-search-results {
+  overflow: auto;
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 3px;
+}
+.message-search-results button {
+  height: auto;
+  width: 100%;
+  white-space: normal;
+  justify-content: stretch;
+  text-align: left;
+  padding: 10px;
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+}
+.message-search-results button:hover,
+.message-search-results button:focus-visible {
+  background: var(--hover);
+}
+.search-result-title {
+  font-weight: 600;
+}
+.search-result-excerpt {
+  color: var(--muted);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.sidebar-searches {
+  display: grid;
+  gap: 3px;
+}
+.history-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  color: var(--muted);
+}
+.history-navigation button {
+  padding: 5px 8px;
+  border-radius: 6px;
+}
+.focused-message {
+  border-radius: 10px;
+  background: var(--accent-surface);
+}

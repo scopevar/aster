@@ -1,0 +1,62 @@
+.computer-tool {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  width: min(440px, 100%);
+  box-sizing: border-box;
+  background: var(--panel);
+  font-size: 12px;
+}
+.computer-tool-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.computer-tool-heading strong {
+  flex: 1;
+  font-weight: 500;
+}
+.computer-tool-heading span {
+  color: var(--muted);
+}
+.computer-tool pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 240px;
+  overflow: auto;
+  padding: 10px;
+  background: var(--surface);
+  border-radius: 5px;
+  user-select: text;
+  font-size: 12px;
+}
+.computer-tool p {
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 8px 0;
+}
+.computer-tool-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.computer-tool button {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.computer-tool-actions button:last-child {
+  background: var(--text);
+  color: var(--panel);
+}
+.computer-tool button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.computer-tool p[role="alert"],
+.computer-tool.unknown .computer-tool-heading span {
+  color: var(--danger);
+}

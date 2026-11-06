@@ -1,0 +1,237 @@
+.sidebar {
+  background: var(--surface);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 12px;
+  border-right: 1px solid var(--line);
+}
+.sidebar-top {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  gap: 8px;
+}
+.drag-region {
+  flex: 1;
+  align-self: stretch;
+  -webkit-app-region: drag;
+}
+.icon-button {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  color: var(--secondary-text);
+}
+.icon-button:hover {
+  background: var(--hover);
+}
+.search {
+  height: 33px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 9px;
+  gap: 6px;
+  color: var(--secondary-text);
+  transition:
+    background 120ms var(--ease-smooth),
+    border-color 120ms var(--ease-smooth);
+}
+.search:hover {
+  background: var(--surface-secondary);
+}
+.search input {
+  width: 100%;
+  min-width: 0;
+}
+.sidebar-search {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+}
+.bot-list {
+  flex: 1;
+  overflow: auto;
+  padding-top: 8px;
+}
+.bot-item {
+  height: auto;
+  color: var(--secondary-text);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-align: left;
+  padding: 10px 16px;
+  border-radius: var(--field-radius);
+  font-size: 14px;
+  min-height: 55px;
+  position: relative;
+}
+.bot-item:hover {
+  background: var(--surface-secondary);
+  color: var(--text);
+}
+.bot-item.selected {
+  background: var(--default);
+  color: var(--text);
+}
+.bot-item.selected:hover {
+  background: var(--default-hover);
+}
+.bot-item > span:not(.avatar) {
+  min-width: 0;
+}
+.sidebar-label {
+  flex: 1;
+}
+.sidebar-avatar {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+}
+.work-indicator,
+.unread-indicator {
+  position: absolute;
+  right: -3px;
+  bottom: -1px;
+  min-width: 12px;
+  height: 12px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: var(--on-primary);
+  border: 2px solid var(--line);
+  font-size: 9px;
+  line-height: 8px;
+  text-align: center;
+  padding: 0 2px;
+}
+.work-indicator {
+  width: 20px;
+  height: 14px;
+  line-height: 8px;
+  letter-spacing: 1px;
+}
+.unread-indicator {
+  background: var(--accent);
+}
+.sidebar.collapsed {
+  padding: 0 16px;
+}
+.collapsed .sidebar-top {
+  height: 50px;
+  flex-shrink: 0;
+}
+.collapsed .bot-list {
+  padding-top: 4px;
+  scrollbar-width: none;
+  overflow-x: hidden;
+}
+.collapsed .bot-item {
+  padding: 10px;
+  margin: 0 0 3px;
+  justify-content: center;
+}
+.context-menu {
+  min-width: 200px;
+  max-width: 290px;
+  font-size: 12px;
+}
+.context-menu-anchor {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.context-menu-error {
+  max-width: 260px;
+  white-space: normal;
+  color: var(--danger);
+  font-size: 12px;
+}
+.bot-item strong {
+  display: block;
+  font-weight: 500;
+}
+.bot-item small {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--secondary-text);
+  max-width: 100%;
+  margin-top: 3px;
+  font-size: 12px;
+}
+.avatar {
+  height: 34px;
+  width: 34px;
+  flex-shrink: 0;
+  display: inline-block;
+  position: relative;
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+.avatar-load-state {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  background: var(--background);
+  color: var(--secondary-text);
+  border-radius: 50%;
+  font-size: 10px;
+}
+.avatar.small {
+  height: 21px;
+  width: 21px;
+}
+.pin {
+  margin-left: auto;
+}
+.user-avatar {
+  height: 29px;
+  width: 29px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  color: var(--secondary-text);
+}
+.user-avatar {
+  background: var(--default);
+  border-color: transparent;
+  color: var(--secondary-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+.resize-handle {
+  position: absolute;
+  right: -3px;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  z-index: 20;
+  -webkit-app-region: no-drag;
+}

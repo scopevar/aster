@@ -1,0 +1,61 @@
+.backup-settings .backup-panel {
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--secondary-text);
+}
+.backup-panel p + p {
+  margin-top: 8px;
+}
+.backup-directory {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+}
+.backup-directory svg {
+  color: var(--muted);
+}
+.backup-operation {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding-block: 4px 20px;
+}
+.backup-operation + .backup-operation {
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.backup-operation > div {
+  flex: 1;
+  min-width: 0;
+}
+.backup-operation h3 {
+  margin-bottom: 6px;
+  color: var(--text);
+  font-weight: 500;
+}
+.backup-operation > .button {
+  flex-shrink: 0;
+}
+.backup-panel code {
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+}
+.backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+@media (max-width: 900px) {
+  .backup-operation {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .backup-operation > div {
+    flex-basis: 100%;
+  }
+}

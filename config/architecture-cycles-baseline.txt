@@ -1,0 +1,3 @@
+# Existing runtime import cycles grandfathered by the architecture check.
+# The list may only shrink; new runtime cycles fail the check.
+# Format: repo-relative path -> ... -> repo-relative path

@@ -1,0 +1,130 @@
+.shortcut-settings {
+  padding: 20px 0 14px;
+}
+
+.shortcut-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shortcut-symbol {
+  display: grid;
+  place-items: center;
+  flex: 0 0 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--background);
+  color: var(--secondary-text);
+}
+
+.shortcut-description {
+  flex: 1;
+  min-width: 0;
+}
+
+.shortcut-description h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.shortcut-description p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.shortcut-badge {
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--control);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 18px;
+}
+
+.shortcut-badge[data-state="active"] {
+  background: var(--success-soft);
+  color: var(--success-soft-foreground);
+}
+
+.shortcut-badge[data-state="unavailable"] {
+  background: var(--warning-soft);
+  color: var(--warning-soft-foreground);
+}
+
+.shortcut-editor {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.shortcut-editor > label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.shortcut-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.shortcut-controls .shortcut-recorder {
+  width: 260px;
+  max-width: 100%;
+  min-width: 0;
+  cursor: pointer;
+  caret-color: transparent;
+}
+
+.shortcut-recorder:not(:placeholder-shown) {
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.shortcut-recorder[data-recording="true"] {
+  cursor: default;
+}
+
+.shortcut-hint,
+.shortcut-error {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.shortcut-hint {
+  color: var(--muted);
+}
+
+.shortcut-error {
+  color: var(--danger);
+}
+
+.shortcut-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.shortcut-status > svg {
+  margin-top: 3px;
+}
+
+.shortcut-status > p {
+  margin: 0;
+}

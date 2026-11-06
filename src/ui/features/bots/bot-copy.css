@@ -1,0 +1,14 @@
+.bot-copy-form {
+  padding: 0 24px 24px;
+}
+.bot-copy-form fieldset {
+  border: 0;
+  padding: 0;
+  margin: 20px 0;
+  display: grid;
+  gap: 16px;
+}
+.bot-copy-form label:not(.checkbox__content) {
+  display: grid;
+  gap: 8px;
+}

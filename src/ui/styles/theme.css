@@ -1,0 +1,49 @@
+@import "./heroui.css";
+
+/* Neutral application colors use HeroUI tokens so controls share the same palette. */
+:root[data-theme="light"] {
+  --background: #ffffff;
+  --foreground: #0c0d11;
+  --surface-secondary: #f9f9f9;
+  --surface-tertiary: #f2f4f3;
+  --default: #f2f4f3;
+  --default-hover: #e9ecea;
+  --default-foreground: var(--foreground);
+  --muted: #686c74;
+  --border: #eaeaea;
+  --separator: #eaeaea;
+  --navigation-selected: #eaeaea;
+  --navigation-hover: #dfdfdf;
+}
+
+:root {
+  --navigation-selected: var(--default);
+  --navigation-hover: var(--default-hover);
+  --panel: var(--surface-secondary);
+  --hover: var(--default-hover);
+  --selected: var(--default);
+  --control: var(--default);
+  --control-hover: var(--default-hover);
+  --option: var(--default);
+  --bubble: var(--surface);
+  --bubble-nested: var(--surface-tertiary);
+  --user-bubble: var(--accent);
+  --user-text: var(--accent-foreground);
+  --composer: var(--surface);
+  --search: var(--default);
+  --primary: var(--accent);
+  --on-primary: var(--accent-foreground);
+  --text: var(--foreground);
+  --secondary-text: var(--muted);
+  --faint: var(--muted);
+  --line: var(--separator);
+  --line-strong: var(--border);
+  --surface-selected: var(--default);
+  --warning-surface: var(--warning-soft);
+  --warning-border: var(--warning);
+  --accent-surface: var(--accent-soft);
+  --reaction-selected: var(--accent-soft);
+  --avatar-black: var(--foreground);
+  --avatar-eyes: var(--background);
+  --artwork-ink: var(--foreground);
+}

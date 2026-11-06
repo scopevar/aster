@@ -1,0 +1,10 @@
+.app-anchored-popover {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.app-anchored-popover .popover__dialog {
+  padding: 0;
+  outline: none;
+}

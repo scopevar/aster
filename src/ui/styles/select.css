@@ -1,0 +1,96 @@
+/* Use Chromium's customizable picker so native keyboard and form behavior stay intact. */
+select,
+select::picker(select) {
+  appearance: base-select;
+}
+select {
+  min-height: 32px;
+  min-width: 0;
+  max-width: 100%;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 10px;
+  background: var(--control);
+  color: var(--text);
+  font: inherit;
+  line-height: 20px;
+  cursor: pointer;
+  user-select: none;
+}
+select::picker-icon {
+  content: "";
+  width: 4px;
+  height: 4px;
+  margin: 0 2px 2px auto;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  rotate: 45deg;
+  color: var(--secondary-text);
+}
+select:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+select:open {
+  border-color: var(--line-strong);
+}
+select:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+select::picker(select) {
+  width: max-content;
+  min-width: anchor-size(width);
+  max-width: calc(100dvw - 16px);
+  max-height: min(320px, calc(100dvh - 16px));
+  margin-block: 6px;
+  padding: 4px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--background);
+  color: var(--text);
+  box-shadow: var(--overlay-shadow);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font: inherit;
+}
+select option {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text);
+  line-height: 20px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+select option:checked {
+  background: var(--selected);
+}
+select option::checkmark {
+  order: 1;
+  margin-left: auto;
+  color: var(--text);
+}
+select option:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+select option:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+@media (hover: hover) and (pointer: fine) {
+  select:hover:not(:disabled) {
+    background: var(--control-hover);
+  }
+  select option:hover:not(:disabled) {
+    background: var(--hover);
+  }
+}

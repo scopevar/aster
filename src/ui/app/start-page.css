@@ -1,0 +1,187 @@
+.start-page {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 48px 32px 64px;
+}
+.start-page-content {
+  width: min(100%, 520px);
+  min-width: 0;
+  text-align: center;
+}
+.start-page-mark {
+  display: block;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin: 0 auto 26px;
+}
+.start-page h1 {
+  font-size: 28px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.start-page-description {
+  margin-top: 12px;
+  color: var(--secondary-text);
+  font-size: 14px;
+  line-height: 1.8;
+  text-wrap: balance;
+}
+.start-page-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+.start-page-action > button {
+  min-width: 150px;
+  min-height: 42px;
+  gap: 9px;
+  border-radius: 12px;
+  padding-inline: 22px;
+  font-size: 14px;
+}
+.start-page-hint {
+  color: var(--secondary-text);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.start-page-secondary {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--secondary-text);
+}
+.start-page-secondary button {
+  font-size: 12px;
+}
+.start-page-steps {
+  display: flex;
+  max-width: 400px;
+  list-style: none;
+  margin: 40px auto 0;
+  padding: 0;
+  font-size: 12px;
+  color: var(--secondary-text);
+}
+.start-page-steps li {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 8px;
+  white-space: nowrap;
+}
+.start-page-steps li:last-child {
+  flex: none;
+}
+.start-page-steps li:not(:last-child)::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  margin-inline: 4px 12px;
+  background: var(--line-strong);
+}
+.start-page-step-number {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--surface-tertiary);
+  font-size: 11px;
+}
+.start-page-steps li[aria-current="step"] {
+  color: var(--text);
+}
+.start-page-steps li[aria-current="step"] .start-page-step-number,
+.start-page-steps li[data-complete="true"] .start-page-step-number {
+  background: var(--accent-surface);
+  color: var(--primary);
+}
+.start-page-assistants {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  max-height: min(42vh, 360px);
+  overflow: auto;
+  padding: 4px;
+  margin-top: 24px;
+}
+.start-page-assistant {
+  width: 100%;
+  height: auto;
+  min-width: 0;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 16px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  text-align: left;
+  white-space: normal;
+}
+.start-page-assistant:hover {
+  background: var(--surface-secondary);
+}
+.start-page-assistant-copy {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+  min-width: 0;
+}
+.start-page-assistant-copy strong,
+.start-page-assistant-copy > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.start-page-assistant-copy strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+.start-page-assistant-copy > span,
+.start-page-assistant > svg {
+  font-size: 12px;
+  color: var(--secondary-text);
+}
+.start-page-notice {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.start-page-notice [role="alert"] {
+  color: var(--danger);
+}
+@media (max-width: 900px) {
+  .start-page-assistants {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-height: 620px) {
+  .start-page {
+    padding-block: 24px;
+  }
+  .start-page-mark {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 18px;
+  }
+  .start-page h1 {
+    font-size: 25px;
+  }
+  .start-page-steps {
+    margin-top: 28px;
+  }
+}

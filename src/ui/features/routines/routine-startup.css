@@ -1,0 +1,23 @@
+/* Match the native window until AppTheme applies the saved preference. */
+:root:not([data-theme]) {
+  background: #ffffff;
+  color: #0c0d11;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    background: #060607;
+    color: #ededed;
+  }
+}
+.routine-startup {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  height: 100vh;
+  font-size: 13px;
+}
+.routine-startup img {
+  width: 44px;
+  height: 44px;
+}

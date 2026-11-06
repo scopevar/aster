@@ -1,0 +1,19 @@
+.app-disclosure > .disclosure__heading {
+  margin: 0;
+}
+.app-disclosure-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 0;
+  text-align: left;
+  font-size: inherit;
+  font-weight: inherit;
+}
+.app-disclosure-trigger > .disclosure__indicator {
+  margin-left: auto;
+}
+.app-disclosure .disclosure__body {
+  padding: 0;
+}

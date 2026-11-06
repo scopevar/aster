@@ -1,0 +1,88 @@
+.modal__dialog.start-conversation-dialog {
+  width: 480px;
+  max-width: calc(100vw - 32px);
+}
+.start-conversation-dialog .app-modal-header {
+  gap: 6px;
+  padding-right: 28px;
+}
+.start-conversation-dialog .modal__heading {
+  font-size: 18px;
+  font-weight: 600;
+}
+.start-conversation-subtitle {
+  color: var(--muted);
+  font-size: 13px;
+}
+.start-conversation-search {
+  width: 100%;
+}
+.start-conversation-search .search-field__group {
+  height: 42px;
+}
+.start-conversation-search .search-field__input {
+  width: 100%;
+  min-width: 0;
+}
+.start-conversation-section {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 4px 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.start-conversation-list {
+  gap: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.start-conversation-list .list-box-item {
+  min-height: 64px;
+  padding: 10px;
+}
+.start-conversation-list .avatar {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+.start-conversation-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.start-conversation-name,
+.start-conversation-description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.start-conversation-name {
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 500;
+}
+.start-conversation-description {
+  color: var(--muted);
+  font-size: 12px;
+}
+.start-conversation-list .list-box-item > svg {
+  color: var(--muted);
+}
+.start-conversation-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 12px;
+  color: var(--muted);
+  text-align: center;
+}
+.start-conversation-empty p {
+  color: var(--foreground);
+  font-size: 14px;
+}
+.start-conversation-empty span {
+  font-size: 12px;
+}

@@ -1,0 +1,6 @@
+# Existing files grandfathered by the file-size ratchet.
+# The list may only shrink; split files before exceeding the current budget.
+# Format: repo-relative path<TAB>max counted lines
+src/desktop/main.ts	500
+tests/routines.test.ts	952
+tests/store.test.ts	1178

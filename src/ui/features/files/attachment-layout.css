@@ -1,0 +1,144 @@
+.attachment-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.attachment-list:empty,
+.upload-list:empty {
+  display: none;
+}
+.composer-wrap > .attachment-list,
+.composer-wrap > .upload-list {
+  margin: 0 8px 10px;
+}
+.attachment-chip {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  max-width: 240px;
+}
+.attachment-chip > button:first-child {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  text-align: left;
+  min-width: 0;
+}
+.attachment-chip > button > span {
+  min-width: 0;
+}
+.attachment-chip strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.attachment-chip small {
+  display: block;
+  color: var(--faint);
+  font-size: 10px;
+  margin-top: 4px;
+}
+.message .attachment-list {
+  margin-bottom: 7px;
+  justify-content: flex-end;
+}
+.upload-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 10px;
+  background: var(--surface);
+  border-radius: 9px;
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+.upload-row > span {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.upload-row small {
+  display: block;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.upload-row.failed small {
+  color: var(--danger);
+}
+.modal.attachment {
+  width: 720px;
+}
+.attachment-preview {
+  padding: 20px;
+}
+.attachment-preview img,
+.attachment-preview video,
+.attachment-preview audio {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 250px);
+  margin: auto;
+  object-fit: contain;
+}
+.directory-grant {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.attachment-preview pre {
+  max-height: calc(100vh - 260px);
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  margin: 0;
+}
+.attachment-preview footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.load-older {
+  display: block;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+@media (max-width: 950px) {
+  :root {
+    --details-width: 280px;
+  }
+  .market-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 880px) {
+  .with-details .message-body {
+    max-width: 95%;
+  }
+  .with-details .tool-card {
+    min-width: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+  }
+}

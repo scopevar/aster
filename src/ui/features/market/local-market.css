@@ -1,0 +1,212 @@
+.modal.market {
+  width: 1120px;
+  height: min(740px, calc(100vh - 80px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal.market > header {
+  flex-shrink: 0;
+}
+.local-market {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 28px 32px 0;
+}
+.local-market-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 24px;
+}
+.local-market-heading h3 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+.local-market-heading p {
+  color: var(--secondary-text);
+  font-size: 13px;
+  margin: 0;
+}
+.local-market-tabs {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 0;
+}
+.local-market-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.local-market-search {
+  width: 260px;
+  max-width: 45%;
+}
+.local-market-categories {
+  flex-shrink: 0;
+}
+.local-market-categories [role="tab"] {
+  white-space: nowrap;
+  min-width: 84px;
+  gap: 8px;
+}
+.local-market-panel {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px 2px 28px;
+  scrollbar-gutter: stable;
+}
+.local-market-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  gap: 12px;
+}
+.local-market-section-heading h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.local-market-section-heading h3 span {
+  font-size: 12px;
+  color: var(--secondary-text);
+  font-weight: 400;
+}
+.local-market-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+.local-market-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+.local-market-card > .avatar,
+.local-market-template-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+}
+.local-market-template-icon {
+  display: grid;
+  place-items: center;
+  color: var(--secondary-text);
+  background: var(--surface-secondary);
+  border-radius: 12px;
+}
+.local-market-card h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.local-market-card p {
+  flex: 1;
+  margin: 0 0 20px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--secondary-text);
+  white-space: pre-wrap;
+}
+.local-market-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 210px;
+  padding: 24px;
+  color: var(--secondary-text);
+  text-align: center;
+}
+.local-market-empty h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+.local-market-empty p {
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.7;
+}
+.local-market-plugin-target {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--secondary-text);
+}
+.local-market-plugin-target .settings-select {
+  width: 210px;
+  max-width: 100%;
+}
+.local-market-panel .plugin-manager {
+  max-width: none;
+}
+@media (max-width: 800px) {
+  .local-market {
+    padding: 20px 20px 0;
+  }
+  .local-market-heading {
+    padding-bottom: 18px;
+  }
+  .local-market-heading h3 {
+    font-size: 19px;
+  }
+  .local-market-heading p {
+    max-width: 32ch;
+    line-height: 1.7;
+  }
+  .local-market-search {
+    width: 210px;
+  }
+}
+@media (max-height: 640px) {
+  .local-market-heading {
+    padding-bottom: 14px;
+  }
+  .local-market-toolbar {
+    padding-bottom: 12px;
+  }
+  .local-market-panel {
+    padding-top: 14px;
+  }
+  .local-market-card {
+    padding: 16px;
+  }
+  .local-market-card > .avatar {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+  }
+  .local-market-card p {
+    margin-bottom: 14px;
+  }
+}

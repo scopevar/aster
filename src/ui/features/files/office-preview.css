@@ -1,0 +1,232 @@
+.modal.office {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal.office > header {
+  flex: 0 0 52px;
+  gap: 12px;
+  padding: 8px 56px 8px 16px;
+}
+.modal.office > header .app-modal-heading {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.office-notice {
+  padding: 32px;
+  text-align: center;
+}
+.office-error {
+  color: var(--danger);
+  padding: 8px 16px;
+  font-size: 12px;
+}
+.office-warnings {
+  flex-shrink: 0;
+  font-size: 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line);
+  max-height: 25vh;
+  overflow: auto;
+}
+.office-warnings .app-disclosure-trigger {
+  cursor: pointer;
+  color: var(--muted);
+}
+.office-warnings p {
+  margin: 6px 0;
+}
+.word-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 24px;
+}
+.word-document {
+  max-width: 800px;
+  margin: auto;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  user-select: text;
+}
+.word-document p {
+  margin: 0 0 12px;
+  min-height: 1em;
+}
+.word-document h1,
+.word-document h2,
+.word-document h3 {
+  margin: 20px 0 12px;
+  line-height: 1.3;
+}
+.word-document table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 16px 0;
+}
+.word-document td,
+.word-document th {
+  border: 1px solid var(--line);
+  padding: 8px;
+  vertical-align: top;
+}
+.word-document img {
+  max-width: 100%;
+  height: auto;
+}
+.word-document a {
+  color: var(--focus);
+  text-decoration: underline;
+}
+.office-image-error {
+  display: block;
+  border: 1px solid var(--line);
+  padding: 16px;
+  color: var(--muted);
+}
+.table-preview {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.sheet-value-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  flex-shrink: 0;
+  padding: 0 12px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.sheet-value-bar > span:first-child {
+  min-width: 66px;
+  max-width: 170px;
+  font-variant-numeric: tabular-nums;
+}
+.sheet-value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: text;
+}
+.sheet-value-bar button {
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: var(--hover);
+}
+.sheet-limit {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 6px 12px;
+  margin: 0;
+}
+.sheet-scroll {
+  position: relative;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+  outline: none;
+  overscroll-behavior: contain;
+}
+.sheet-surface {
+  position: relative;
+  user-select: none;
+}
+.sheet-cell,
+.sheet-column,
+.sheet-row,
+.sheet-corner {
+  position: absolute;
+  box-sizing: border-box;
+  height: 28px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  line-height: 27px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sheet-cell,
+.sheet-column {
+  width: 120px;
+  padding: 0 8px;
+}
+.sheet-column,
+.sheet-row,
+.sheet-corner {
+  background: var(--panel);
+  color: var(--muted);
+  text-align: center;
+  z-index: 2;
+}
+.sheet-row,
+.sheet-corner {
+  width: 48px;
+}
+.sheet-corner {
+  z-index: 3;
+}
+.sheet-cell.chosen {
+  background: color-mix(in srgb, var(--focus) 12%, transparent);
+}
+.sheet-cell.active {
+  box-shadow: inset 0 0 0 2px var(--focus);
+}
+.sheet-cell.cell-error {
+  color: var(--danger);
+}
+.sheet-pending {
+  color: var(--muted);
+}
+.sheet-tabs {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 0 8px;
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+}
+.sheet-tabs button {
+  white-space: nowrap;
+  padding: 8px 14px;
+  font-size: 12px;
+  border-bottom: 2px solid transparent;
+}
+.sheet-tabs button[aria-selected="true"] {
+  background: var(--surface);
+  border-bottom-color: var(--focus);
+}
+.sheet-status {
+  font-size: 11px;
+  flex-shrink: 0;
+  padding: 5px 12px;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+.modal.office .app-modal-heading h2 {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

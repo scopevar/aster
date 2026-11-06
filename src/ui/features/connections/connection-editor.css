@@ -1,0 +1,209 @@
+.connection-editor {
+  width: 100%;
+  max-width: 640px;
+  margin-inline: auto;
+  padding-top: 0;
+  container-type: inline-size;
+}
+.connection-editor fieldset {
+  display: grid;
+  gap: var(--settings-space-section);
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.connection-editor-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.connection-editor-heading h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.3px;
+}
+.connection-editor-heading p {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--secondary-text);
+}
+.connection-editor .settings-section {
+  margin: 0;
+}
+.connection-section-body {
+  display: grid;
+  gap: var(--settings-space-content);
+  min-width: 0;
+}
+.connection-editor .setting-group {
+  padding-block: var(--settings-space-row);
+}
+.connection-editor label:not(.radio__content),
+.connection-editor .settings-select-field,
+.connection-auth-label {
+  display: block;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.provider-required {
+  color: var(--secondary-text);
+}
+.connection-editor small {
+  display: block;
+  margin-top: 4px;
+  color: var(--secondary-text);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.connection-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--settings-space-content);
+}
+.connection-fields > small {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.connection-editor .connection-auth-help {
+  display: flex;
+  align-items: start;
+  gap: 5px;
+}
+.connection-auth-help svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.connection-section-body > small {
+  margin: 0;
+}
+.connection-auth-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--settings-space-content);
+  min-width: 0;
+}
+.connection-auth-options .radio {
+  margin: 0;
+}
+.connection-auth-options .radio__content {
+  min-height: 44px;
+}
+.connection-auth-options strong {
+  font-weight: 500;
+}
+.connection-editor .input {
+  display: block;
+  margin-top: 8px;
+}
+.connection-editor .settings-disclosure {
+  display: block;
+  margin-bottom: 0;
+  padding: 0;
+}
+.connection-editor .connection-advanced-group {
+  overflow: hidden;
+  padding: 0;
+}
+.connection-advanced-group .settings-disclosure {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.connection-advanced-group .settings-disclosure + .settings-disclosure {
+  border-top: 1px solid var(--line);
+}
+.connection-advanced-group .settings-disclosure-trigger {
+  min-height: 44px;
+  border-radius: 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+.connection-disclosure-body {
+  display: grid;
+  gap: 16px;
+}
+.connection-json {
+  max-height: 300px;
+  overflow: auto;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--hover);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.connection-footer-row,
+.connection-test-actions,
+.connection-save-actions,
+.connection-footer-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.connection-save-actions {
+  margin-left: auto;
+}
+.connection-validation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 0 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.connection-editor[aria-busy="true"] .input:disabled,
+.connection-editor[aria-busy="true"] .select__trigger:disabled {
+  opacity: 1;
+}
+.connection-footer-row,
+.connection-footer-meta {
+  justify-content: space-between;
+  gap: 16px;
+}
+.connection-editor-footer {
+  display: grid;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.connection-delete-action {
+  flex-shrink: 0;
+  color: var(--danger);
+}
+@container (max-width: 480px) {
+  .connection-fields,
+  .connection-auth-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.connection-editor .error {
+  margin: 0 0 16px;
+}
+@media (max-width: 900px) {
+  .connection-editor-heading {
+    align-items: start;
+  }
+  .connection-editor-heading h1 {
+    font-size: 21px;
+  }
+  .connection-footer-row {
+    flex-wrap: wrap;
+  }
+  .connection-save-actions {
+    margin-left: auto;
+  }
+}
+@media (max-width: 650px) {
+  .connection-editor-heading {
+    flex-wrap: wrap;
+  }
+}

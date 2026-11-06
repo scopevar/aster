@@ -1,0 +1,38 @@
+.bot-model-choice .settings-select {
+  display: flex;
+  width: 100%;
+}
+.bot-model-choice small,
+.bot-model-settings small {
+  display: block;
+  margin-top: 6px;
+  color: var(--secondary-text);
+  font-size: 11px;
+  line-height: 1.7;
+}
+.bot-model-settings {
+  margin-top: 8px;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--line);
+}
+.bot-settings-form .bot-model-settings > label {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+.bot-model-settings small {
+  margin-top: 4px;
+  line-height: 1.5;
+}
+.bot-model-settings .settings-select {
+  display: flex;
+  width: 100%;
+  font-size: 12px;
+}
+.bot-model-settings .error {
+  margin-top: 9px;
+  font-size: 11px;
+}
+.bot-model-settings > button {
+  margin-top: 9px;
+}

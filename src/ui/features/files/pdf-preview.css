@@ -1,0 +1,139 @@
+.modal.pdf {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+}
+.modal.pdf > header {
+  flex: 0 0 52px;
+  gap: 12px;
+  padding: 8px 56px 8px 16px;
+}
+.modal.pdf > header .app-modal-heading {
+  flex: 1;
+  min-width: 50px;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pdf-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+.pdf-controls button {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+.pdf-controls button:hover:not(:disabled) {
+  background: var(--hover);
+}
+.pdf-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  position: relative;
+  padding: 16px;
+  background: var(--hover);
+}
+.pdf-notice {
+  text-align: center;
+  padding: 32px;
+}
+.pdf-page-wrap {
+  position: relative;
+  flex-shrink: 0;
+  margin: 0 auto 24px;
+  scroll-margin-top: 16px;
+}
+.pdf-page {
+  position: absolute;
+  inset: 0;
+  background: var(--white);
+  box-shadow: var(--surface-shadow);
+  overflow: hidden;
+}
+.pdf-page canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.pdf-page-number {
+  position: absolute;
+  bottom: -19px;
+  inset-inline: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 10px;
+}
+.pdf-page-status {
+  position: absolute;
+  top: 16px;
+  inset-inline: 12px;
+  color: var(--color-zinc-600);
+  text-align: center;
+  font-size: 12px;
+}
+/* PDF.js TextLayer's documented layout variables, scoped to this viewer. Apache-2.0 component styling. */
+.pdf-page .textLayer {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  line-height: 1;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+.pdf-page .textLayer :is(span, br) {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0 0;
+  user-select: text;
+}
+.pdf-page .textLayer > :not(.markedContent),
+.pdf-page .textLayer .markedContent span:not(.markedContent) {
+  z-index: 1;
+  --font-height: 0;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  --scale-x: 1;
+  --rotate: 0deg;
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x))
+    scale(var(--min-font-size-inv));
+}
+.pdf-page .textLayer .markedContent {
+  display: contents;
+}
+.pdf-page .textLayer ::selection {
+  background: var(--accent-soft);
+}
+@media (max-width: 600px) {
+  .modal.pdf > header {
+    gap: 3px;
+    padding-inline: 8px;
+  }
+  .pdf-controls {
+    gap: 0;
+  }
+}
+
+.modal.pdf .app-modal-heading h2 {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

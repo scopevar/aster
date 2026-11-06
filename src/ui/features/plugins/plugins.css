@@ -1,0 +1,169 @@
+.plugin-manager {
+  max-width: 760px;
+}
+.modal.plugins-dialog {
+  width: 680px;
+}
+.local-plugins {
+  padding: 24px;
+  max-height: 65vh;
+  min-height: 280px;
+  overflow: auto;
+}
+.plugin-manager-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.plugin-manager-heading > div:first-of-type {
+  flex: 1;
+  min-width: 0;
+}
+.plugin-manager-symbol {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  height: 36px;
+  border-radius: 12px;
+  color: var(--secondary-text);
+  background: var(--selected);
+}
+.plugin-manager-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.plugin-manager-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  min-height: 200px;
+  padding: 32px 16px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 13px;
+}
+.plugin-manager-empty strong {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+}
+.local-plugin-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+.local-plugin-skills h3 {
+  flex-basis: 100%;
+}
+.plugin-manager > p,
+.plugin-panel p {
+  line-height: 1.6;
+}
+.plugin-panel {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin: 14px 0;
+  overflow-wrap: anywhere;
+}
+.plugin-panel h4 {
+  margin: 0 0 8px;
+}
+.plugin-panel small {
+  font-weight: normal;
+  opacity: 0.7;
+}
+.plugin-panel button,
+.plugin-manager > button {
+  margin: 6px 8px 6px 0;
+}
+.plugin-panel label:not(.checkbox__content) {
+  display: block;
+  margin: 10px 0;
+}
+.plugin-panel .plugin-check {
+  margin: 10px 0;
+}
+.plugin-panel pre {
+  white-space: pre-wrap;
+  max-height: 240px;
+  overflow: auto;
+}
+.plugin-panel .plugin-warning {
+  opacity: 0.8;
+  font-size: 13px;
+}
+.market-plugin-loading {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0;
+}
+.market-plugin-loading-line {
+  display: block;
+  height: 14px;
+  width: 100%;
+  border-radius: 6px;
+}
+.plugin-approval {
+  width: 440px;
+  max-width: 100%;
+  margin: 12px 0;
+  background: var(--surface);
+  border-color: var(--line);
+  font-size: 13px;
+}
+.plugin-approval-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.plugin-approval-heading > svg {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.plugin-approval-heading > div {
+  flex: 1;
+  min-width: 0;
+}
+.plugin-approval-heading small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  opacity: 1;
+}
+.plugin-approval-heading > span {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.plugin-approval details {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--control);
+}
+.plugin-approval summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+.plugin-approval-note,
+.plugin-approval-detail {
+  margin: 12px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.plugin-approval-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.plugin-approval-actions .button {
+  margin: 0;
+}

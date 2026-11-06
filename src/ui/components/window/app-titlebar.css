@@ -1,0 +1,57 @@
+.app-titlebar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 40px;
+  border-bottom: 1px solid var(--line);
+  background: var(--background);
+  -webkit-app-region: drag;
+}
+.app-titlebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-left: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.app-titlebar-brand img {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: #fef8f2;
+}
+.app-titlebar .window-controls {
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  margin-left: 0;
+  color: var(--text);
+  -webkit-app-region: no-drag;
+}
+.app-titlebar .window-controls button {
+  position: relative;
+  width: 36px;
+  height: 34px;
+  padding: 0;
+  border-radius: 4px;
+}
+.app-titlebar .window-controls button:hover {
+  background: var(--default-hover);
+}
+.app-titlebar .window-controls button:last-child:hover {
+  background: var(--danger);
+  color: var(--danger-foreground);
+}
+.app-titlebar .window-controls button:active {
+  background: var(--selected);
+}
+.app-titlebar .window-controls button:last-child:active {
+  background: var(--danger-hover);
+  color: var(--danger-foreground);
+}
+.app-titlebar .window-controls button:focus-visible {
+  outline-offset: -2px;
+}

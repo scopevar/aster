@@ -1,0 +1,162 @@
+.modal:has(> .templates-manager) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal:has(> .templates-manager) > header {
+  flex-shrink: 0;
+}
+.modal.templates-dialog {
+  width: 760px;
+  height: min(680px, calc(100dvh - 80px));
+}
+.modal.templates-dialog:not(:has(.template-draft-item)) {
+  height: auto;
+}
+.templates-manager {
+  padding: 24px;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+  font-size: 13px;
+  line-height: 1.6;
+  flex: 1;
+}
+.templates-manager > nav,
+.template-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.templates-manager > nav {
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+.templates-manager .template-create {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+.template-create legend {
+  padding-inline: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.template-create-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  padding-top: 4px;
+}
+.template-create > .button {
+  justify-self: end;
+}
+.templates-manager label:not(.checkbox__content) {
+  display: block;
+  margin: 8px 0;
+}
+.templates-manager .template-audience {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.templates-manager .template-audience .settings-select {
+  width: auto;
+  min-width: 140px;
+}
+.template-workspace {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+.template-workspace > nav {
+  position: sticky;
+  top: 0;
+}
+.template-workspace > nav button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  margin: 5px 0;
+  border-radius: 8px;
+  height: auto;
+  min-height: 40px;
+  white-space: normal;
+}
+.template-draft-item span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.template-workspace small {
+  display: block;
+}
+.template-library-empty {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  min-height: 180px;
+  gap: 10px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+.template-library-empty h3 {
+  font-weight: 500;
+  color: var(--text);
+}
+.template-editor {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.template-editor .app-disclosure,
+.template-job,
+.template-preview {
+  border: 1px solid var(--line);
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 6px;
+}
+.template-cover {
+  width: 80px;
+  height: 80px;
+}
+.template-catalog {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+.template-catalog button {
+  text-align: left;
+}
+.template-catalog p {
+  white-space: pre-wrap;
+  max-height: 90px;
+  overflow: auto;
+}
+.template-preview pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.templates-manager [role="alert"] {
+  color: var(--danger);
+}
+@media (max-width: 740px) {
+  .template-workspace {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,35 @@
+.navigation-rail {
+  --default: var(--navigation-selected);
+  --default-hover: var(--navigation-hover);
+  --default-foreground: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 0;
+  padding: 8px 8px 12px;
+  border-right: 1px solid var(--line);
+  background: var(--surface-secondary);
+}
+.navigation-rail-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.navigation-rail .navigation-rail-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  min-width: 0;
+  height: 40px;
+  padding: 0;
+  border-radius: 9px;
+}
+.navigation-rail .navigation-rail-item:hover,
+.navigation-rail .navigation-rail-item[data-hovered="true"],
+.navigation-rail .navigation-rail-item[aria-expanded="true"] {
+  --button-fg: var(--foreground);
+}
+.navigation-rail .navigation-rail-item[aria-expanded="true"] {
+  --button-bg: var(--default);
+}

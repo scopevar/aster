@@ -1,0 +1,50 @@
+.settings-select {
+  width: 256px;
+  max-width: 100%;
+  min-width: 0;
+}
+.settings-theme-select {
+  width: 160px;
+}
+.settings-select .select__trigger {
+  border: 1px solid var(--line);
+}
+.settings-select-popover {
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+}
+.settings-select-popover .list-box-item[aria-selected="true"] {
+  background: var(--selected);
+}
+.settings-select-popover .list-box {
+  max-height: min(320px, var(--available-height, calc(100dvh - 16px)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.settings-search-field {
+  min-width: 0;
+  flex-shrink: 0;
+}
+.settings-search-field .search-field__input {
+  width: 100%;
+  min-width: 0;
+}
+.settings-provider-search {
+  flex: 1;
+  max-width: 300px;
+}
+.provider-picker .settings-provider-search {
+  width: 100%;
+  max-width: none;
+  flex: none;
+}
+.settings-switch {
+  flex-shrink: 0;
+}
+.settings-switch[aria-busy="true"] .switch__content {
+  cursor: progress;
+}
+.connection-editor .settings-select {
+  width: 100%;
+  margin-top: 8px;
+}

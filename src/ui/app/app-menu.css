@@ -1,0 +1,18 @@
+.account-menu {
+  min-width: 228px;
+}
+.account-submenu {
+  min-width: 184px;
+}
+.account-menu .menu-item > span,
+.account-submenu .menu-item > span {
+  flex: 1;
+}
+.account-information {
+  padding: 16px 20px 24px;
+  line-height: 1.7;
+}
+.account-information p + p,
+.account-information h3 + p {
+  margin-top: 12px;
+}

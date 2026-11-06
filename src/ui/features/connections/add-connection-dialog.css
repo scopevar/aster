@@ -1,0 +1,30 @@
+.modal__dialog.connection-add-dialog {
+  width: 680px;
+  height: min(720px, calc(100dvh - 80px));
+  max-width: calc(100vw - 48px);
+}
+.connection-add-dialog .modal__body {
+  padding: 24px;
+  color: var(--foreground);
+  scrollbar-gutter: stable;
+}
+.connection-add-dialog .app-modal-header {
+  padding: 24px 56px 0 24px;
+  border-bottom: 0;
+}
+.connection-add-dialog .app-modal-header p {
+  color: var(--muted);
+  font-size: 14px;
+}
+.connection-add-dialog .connection-editor-heading {
+  padding-right: 36px;
+}
+.connection-add-dialog:focus {
+  outline: none;
+}
+@media (max-width: 639px) {
+  .modal__dialog.connection-add-dialog {
+    max-width: calc(100vw - 32px);
+    height: min(720px, calc(100dvh - 32px));
+  }
+}

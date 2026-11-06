@@ -1,0 +1,10 @@
+@layer components {
+  .app-toaster.toast-region {
+    top: 28px;
+  }
+
+  .app-toaster .toast__close-button {
+    pointer-events: auto;
+    opacity: 1;
+  }
+}

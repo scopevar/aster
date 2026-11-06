@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'sha256-DIAGRAM_SCRIPT_HASH'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'"
+    />
+    <title>图表预览</title>
+    <style>
+      body {
+        margin: 16px;
+        background: white;
+        color: black;
+        font-family: sans-serif;
+      }
+      svg {
+        max-width: 100%;
+        height: auto;
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+        background: color-mix(in srgb, currentColor 20%, transparent);
+      }
+      ::-webkit-scrollbar-button {
+        display: none;
+        width: 0;
+        height: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="diagram-root"></div>
+    <script>
+      DIAGRAM_SCRIPT_CONTENT;
+    </script>
+  </body>
+</html>

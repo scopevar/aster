@@ -1,0 +1,67 @@
+.modal.delete-confirm {
+  width: 380px;
+  padding: 16px;
+  border-radius: 14px;
+  box-shadow: none;
+}
+.delete-confirm h2 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.delete-confirm p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--secondary-text);
+}
+.delete-confirm .deletion-note {
+  margin-top: 8px;
+  font-size: 12px;
+}
+.delete-confirm footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+}
+.delete-confirm footer button {
+  flex: 1;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 8px;
+  min-height: 32px;
+}
+.delete-confirm footer .destructive {
+  background: var(--danger);
+  border-color: transparent;
+  color: var(--danger-foreground);
+}
+.context-menu .destructive {
+  color: var(--danger);
+}
+.deletion-progress {
+  position: fixed;
+  bottom: 66px;
+  left: 18px;
+  right: 18px;
+  z-index: 20;
+  max-height: 160px;
+  overflow: auto;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 12px;
+  width: fit-content;
+  max-width: calc(100vw - 36px);
+  margin-left: auto;
+  overflow-wrap: anywhere;
+}
+.deletion-progress > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.deletion-progress button {
+  flex: none;
+}

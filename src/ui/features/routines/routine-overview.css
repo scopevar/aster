@@ -1,0 +1,73 @@
+.bot-details.overview {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 12px;
+}
+.routine-overview {
+  flex: 1;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+}
+.routine-overview-empty {
+  flex: 1;
+  margin: 0;
+  padding: 24px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.5;
+  color: var(--faint);
+}
+.routine-overview-manage {
+  align-self: center;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: auto;
+  cursor: pointer;
+}
+.routine-overview-list {
+  list-style: none;
+  padding: 12px 0;
+  margin: 0;
+}
+.routine-overview-list button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: auto;
+  padding: 12px 8px;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+.routine-overview-list button > svg {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.routine-overview-list button > span {
+  flex: 1;
+  min-width: 0;
+}
+.routine-overview-list strong,
+.routine-overview-list small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+.routine-overview-list small {
+  color: var(--muted);
+}
+.routine-overview-error p {
+  overflow-wrap: anywhere;
+}
+.routine-overview-warning {
+  color: var(--secondary-text);
+}

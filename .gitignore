@@ -1,0 +1,26 @@
+# Local reference material and experiment data
+/.analysis/
+/.data/
+
+# Dependencies and generated artifacts
+node_modules/
+/dist/
+/packages/cli/dist/
+/build/
+/release/
+/coverage/
+/playwright-report/
+/test-results*/
+*.tsbuildinfo
+*.log
+/.runtime/
+/.cache/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+
+# Operating system files
+.DS_Store
+Thumbs.db

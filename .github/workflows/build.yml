@@ -1,0 +1,53 @@
+name: Build installer
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        type: string
+        required: true
+      plan:
+        type: string
+        required: true
+      publish:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    if: ${{ !inputs.publish || github.ref == 'refs/heads/main' }}
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 45
+    env:
+      ASTER_CI_PLAN: ${{ inputs.plan }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ fromJSON(inputs.plan).sourceCommit }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Install Linux packaging tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y fakeroot
+      - name: Build and validate installer
+        run: pnpm release --ci build
+      - name: Upload validated installers and update metadata
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: installer-${{ runner.os }}-x64
+          retention-days: 7
+          if-no-files-found: error
+          path: |
+            release/ci/${{ runner.os == 'Linux' && 'linux' || 'win32' }}-x64/*.AppImage
+            release/ci/${{ runner.os == 'Linux' && 'linux' || 'win32' }}-x64/*.deb
+            release/ci/${{ runner.os == 'Linux' && 'linux' || 'win32' }}-x64/*.exe
+            release/ci/${{ runner.os == 'Linux' && 'linux' || 'win32' }}-x64/*.blockmap
+            release/ci/${{ runner.os == 'Linux' && 'linux' || 'win32' }}-x64/latest*.yml
+            release/ci/${{ runner.os == 'Linux' && 'linux' || 'win32' }}-x64/nightly*.yml

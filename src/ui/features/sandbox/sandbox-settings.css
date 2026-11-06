@@ -1,0 +1,39 @@
+.sandbox-settings .sandbox-field {
+  display: grid;
+  gap: 8px;
+  padding: 14px 0;
+  font-size: 14px;
+}
+.sandbox-settings .sandbox-field + .setting-row,
+.sandbox-settings .setting-row + .sandbox-field,
+.sandbox-result {
+  border-top: 1px solid var(--line);
+}
+.sandbox-field small,
+.sandbox-result p,
+.sandbox-settings > section > p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.sandbox-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+.sandbox-result {
+  padding: 14px 0;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+.sandbox-result p {
+  margin: 6px 0 0;
+}
+.sandbox-settings .setting-row > .settings-select {
+  max-width: 220px;
+}
+.sandbox-settings[aria-busy="true"] .input:disabled,
+.sandbox-settings[aria-busy="true"] .select__trigger:disabled {
+  opacity: 1;
+}

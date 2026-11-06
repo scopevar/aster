@@ -1,0 +1,102 @@
+.shared-memory-page {
+  outline: none;
+}
+.shared-memory-page .memory-manager {
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+}
+.memory-description {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.memory-description p {
+  margin: 0;
+}
+.shared-memory-page .memory-manager > p {
+  font-size: 13px;
+  margin: 0 0 24px;
+}
+.shared-memory-page .memory-columns {
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 0;
+  align-items: stretch;
+  min-height: 360px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.shared-memory-page .settings-section {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-bottom: 0;
+}
+.shared-memory-page .settings-section:first-child {
+  border-right: 1px solid var(--line);
+}
+.shared-memory-page .settings-section > h2 {
+  margin: 0;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.shared-memory-page .memory-list {
+  flex: 1;
+  max-height: 480px;
+  min-width: 0;
+  padding: 12px;
+  border: 0;
+  border-radius: 0;
+  background: var(--panel);
+  font-size: 13px;
+}
+.memory-empty {
+  margin: 12px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+}
+.shared-memory-page .memory-entry {
+  align-items: stretch;
+  justify-content: flex-start;
+  height: auto;
+  width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.shared-memory-page .memory-editor {
+  flex: 1;
+  border: 0;
+  border-radius: 0;
+  padding: 20px;
+  gap: 18px;
+  font-size: 14px;
+}
+.shared-memory-page .memory-editor textarea {
+  min-height: 160px;
+}
+.shared-memory-page .memory-buttons {
+  justify-content: space-between;
+}
+.shared-memory-page .memory-buttons > button:last-child {
+  margin-left: auto;
+}
+@media (max-width: 900px) {
+  .shared-memory-page .memory-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .shared-memory-page .memory-list {
+    max-height: 180px;
+  }
+  .shared-memory-page .settings-section:first-child {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+}

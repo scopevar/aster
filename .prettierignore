@@ -1,0 +1,13 @@
+dist/
+release/
+build/
+test-results/
+node_modules/
+vendor/
+.cache/
+.runtime/
+*.sqlite
+*.sqlite-*
+*.xls
+*.xlsx
+pnpm-lock.yaml

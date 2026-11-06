@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  workflow_call:
+    inputs:
+      source:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  check:
+    name: Check (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.source }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Install Electron for real entry tests
+        run: node node_modules/electron/install.js
+      - name: Resolve Windows temporary directory aliases
+        if: runner.os == 'Windows'
+        run: |
+          node --input-type=module -e 'import {realpathSync, appendFileSync} from "node:fs"; import {tmpdir} from "node:os"; const path = realpathSync.native(tmpdir()); console.log("Test temporary directory:", tmpdir(), "=>", path); appendFileSync(process.env.GITHUB_ENV, `TEMP=${path}\nTMP=${path}\n`);'
+      - name: Initialize Windows user credential protection
+        if: runner.os == 'Windows'
+        timeout-minutes: 1
+        shell: powershell
+        run: |
+          $probeTimer = [System.Diagnostics.Stopwatch]::StartNew()
+          Add-Type -AssemblyName System.Security
+          $probeBytes = [System.Text.Encoding]::UTF8.GetBytes('aster-ci-dpapi-probe')
+          $sealedProbe = [System.Security.Cryptography.ProtectedData]::Protect($probeBytes, $null, [System.Security.Cryptography.DataProtectionScope]::CurrentUser)
+          $openedProbe = [System.Security.Cryptography.ProtectedData]::Unprotect($sealedProbe, $null, [System.Security.Cryptography.DataProtectionScope]::CurrentUser)
+          if ([Convert]::ToBase64String($openedProbe) -cne [Convert]::ToBase64String($probeBytes)) { throw 'Windows credential protection round trip failed' }
+          Write-Host ('Windows user credential protection ready ({0:N0} ms)' -f $probeTimer.Elapsed.TotalMilliseconds)
+      - name: Verify Windows credential metadata before full checks
+        if: runner.os == 'Windows'
+        timeout-minutes: 2
+        run: node --import tsx --test --test-name-pattern='unchanged credential metadata' tests/agent-connections.test.ts
+      - name: Install Linux test environment
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y xvfb xauth libsecret-tools gnome-keyring dbus-x11
+      - name: Enable Linux Electron sandbox helper
+        if: runner.os == 'Linux'
+        run: |
+          sudo chown root:root node_modules/electron/dist/chrome-sandbox
+          sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
+      - name: Project checks (Linux desktop and keyring)
+        if: runner.os == 'Linux'
+        run: |
+          dbus-run-session -- bash -eo pipefail -c '
+            printf "\n" | gnome-keyring-daemon --unlock --components=secrets
+            xvfb-run -a pnpm check
+            xvfb-run -a pnpm test:e2e:smoke
+          '
+      - name: Project checks (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          pnpm check
+          pnpm test:e2e:smoke
+      # 依赖审计暂不作为 CI 门禁，按需手动运行 pnpm check:dependencies。
+      - name: Workflow and release documentation format
+        if: runner.os == 'Linux'
+        run: pnpm exec prettier --check .github docs/releasing.md

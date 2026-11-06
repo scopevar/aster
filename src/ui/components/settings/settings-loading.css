@@ -1,0 +1,31 @@
+.settings-loading {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.settings-loading > div {
+  display: grid;
+  gap: 16px;
+}
+.settings-loading > div > .skeleton {
+  display: block;
+  height: 16px;
+}
+.settings-loading > div > .skeleton:first-child {
+  width: 35%;
+}
+.settings-loading > div > .skeleton:last-child {
+  width: 70%;
+}
+.settings-read-error {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 13px;
+}
+.settings-read-error p {
+  margin: 0 0 12px;
+}

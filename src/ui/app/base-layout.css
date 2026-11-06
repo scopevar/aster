@@ -1,0 +1,99 @@
+@layer base {
+  :root {
+    overflow: hidden;
+    font-family: system-ui, "Segoe UI", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    background: var(--background);
+    font-size: 16px;
+    font-synthesis: none;
+
+    --details-width: 320px;
+    --conversation-font-size: 14px;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-size: 13px;
+    margin: 0;
+    user-select: none;
+  }
+  input,
+  textarea,
+  [contenteditable]:not([contenteditable="false"]) {
+    user-select: text;
+  }
+  pre {
+    user-select: text;
+  }
+  button,
+  input,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+  button {
+    cursor: pointer;
+    user-select: none;
+  }
+  button:disabled {
+    cursor: default;
+    opacity: 0.45;
+  }
+  button {
+    border: 0;
+    background: transparent;
+  }
+  input,
+  textarea {
+    border: 0;
+    outline: none;
+    background: transparent;
+  }
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  h1,
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+  h2 {
+    font-size: 18px;
+  }
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  svg {
+    flex-shrink: 0;
+  }
+}
+.app {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 40px minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--background);
+}
+:root[data-theme="dark"] .app {
+  border: 0;
+}
+.main-page {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+  background: var(--background);
+}
+.main-page[hidden] {
+  display: none;
+}
