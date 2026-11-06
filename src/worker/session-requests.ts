@@ -7,6 +7,10 @@ export class SessionRequests {
   private closed = false;
   private readonly active = new Map<Promise<unknown>, AbortController>();
 
+  get count() {
+    return this.active.size;
+  }
+
   async run<T>(
     request: IncomingMessage,
     response: ServerResponse,

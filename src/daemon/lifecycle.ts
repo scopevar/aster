@@ -124,7 +124,11 @@ export async function ensureDaemon(
 }
 
 /** Only authenticated admission plus a generation-specific cleanup receipt proves shutdown. */
-export async function stopDaemon(directory: string, timeoutMs = 30000) {
+export async function stopDaemon(
+  directory: string,
+  timeoutMs = 30000,
+  preparationId?: string,
+) {
   const endpoint = await daemonStatus(directory);
   if (!endpoint)
     throw new AppError("unavailable", "daemon 不在线，无法确认正常清理结果。");
@@ -133,11 +137,13 @@ export async function stopDaemon(directory: string, timeoutMs = 30000) {
   resultSchema.parse(
     await callWorker(
       endpoint,
-      workerRoutes.command,
-      {
-        id: randomUUID(),
-        command: { type: "worker.stop" },
-      },
+      preparationId ? workerRoutes.updatePreparation : workerRoutes.command,
+      preparationId
+        ? { action: "stop", id: preparationId }
+        : {
+            id: randomUUID(),
+            command: { type: "worker.stop" },
+          },
       undefined,
       Math.min(5000, timeoutMs),
     ),

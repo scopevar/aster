@@ -10,6 +10,8 @@ export const appUpdateStatusSchema = z.enum([
   "available",
   "downloading",
   "downloaded",
+  "preparing",
+  "installing",
   "up-to-date",
   "error",
 ]);
@@ -36,6 +38,7 @@ export const appUpdateRequestSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("check") }).strict(),
   z.object({ action: z.literal("download") }).strict(),
   z.object({ action: z.literal("install") }).strict(),
+  z.object({ action: z.literal("cancel-install") }).strict(),
 ]);
 export type AppUpdateRequest = z.infer<typeof appUpdateRequestSchema>;
 

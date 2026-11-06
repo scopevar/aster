@@ -46,6 +46,7 @@ export function bindMemoryProposal(
 /** Owns one independent, bounded, cancellable inference lane; the database owns its queue. */
 export class MemoryService {
   private stopping = false;
+  private updatePaused = false;
   private requested = false;
   private loop: Promise<void> | undefined;
   private active:
@@ -55,6 +56,13 @@ export class MemoryService {
     private readonly store: Pick<Store, "memoryOperations">,
     private readonly model: StructuredModel,
   ) {}
+  pauseForUpdate(paused: boolean) {
+    this.updatePaused = paused;
+    if (!paused) this.wake();
+  }
+  get updateBusy() {
+    return Number(this.active !== undefined);
+  }
   wake() {
     if (
       this.active &&
@@ -114,7 +122,7 @@ export class MemoryService {
     }
   }
   private async pump() {
-    while (!this.stopping) {
+    while (!this.stopping && !this.updatePaused) {
       const work = this.store.memoryOperations.memoryClaim();
       if (!work) return;
       const controller = new AbortController();

@@ -48,7 +48,11 @@ export function AppUpdateSettings({
   }, [readState]);
   const legacy = state === null || state.disabledReason === UPDATE_FEED_MISSING;
   const enabled = state !== null && state.enabled;
-  const run = async (action: "check" | "download" | "install") => {
+  const preparing =
+    state?.status === "preparing" || state?.status === "installing";
+  const run = async (
+    action: "check" | "download" | "install" | "cancel-install",
+  ) => {
     setError("");
     await mutate("updates", async () => {
       try {
@@ -95,6 +99,7 @@ export function AppUpdateSettings({
               !enabled ||
               pendingChannel ||
               busy ||
+              preparing ||
               state.status === "checking" ||
               state.status === "downloading"
             }
@@ -128,7 +133,7 @@ export function AppUpdateSettings({
           <SettingsSwitch
             label="自动更新"
             selected={auto}
-            disabled={!enabled}
+            disabled={!enabled || preparing}
             busy={pendingAutoUpdate}
             onChange={() => {
               if (!enabled || pendingAutoUpdate) return;
@@ -149,11 +154,13 @@ export function AppUpdateSettings({
               pendingAutoUpdate ||
               busy ||
               state?.status === "checking" ||
-              state?.status === "downloading"
+              state?.status === "downloading" ||
+              state?.status === "installing"
             }
             onPress={() => {
               if (!state?.enabled) return;
-              if (state.status === "downloaded") void run("install");
+              if (state.status === "preparing") void run("cancel-install");
+              else if (state.status === "downloaded") void run("install");
               else if (state.status === "available") void run("download");
               else void run("check");
             }}
@@ -161,6 +168,13 @@ export function AppUpdateSettings({
             {buttonLabel(state)}
           </Button>
         </div>
+        {enabled ? (
+          <div className="settings-note">
+            <p>
+              下载不影响任务。安装时暂停接收新工作，等待正在执行的会话和后台任务结束后再重启；排队任务在重启后继续。等待期间可取消更新，恢复正常使用。
+            </p>
+          </div>
+        ) : null}
         {error && !legacy ? (
           <p className="error" role="alert">
             {error}
@@ -174,13 +188,18 @@ export function AppUpdateSettings({
 function versionDescription(state: AppUpdateState | null, legacy: boolean) {
   if (legacy || !state) return "尚未检查远端版本。更新通道尚未配置。";
   if (!state.enabled) return state.disabledReason ?? "更新源尚未配置。";
+  if (state.status === "preparing" || state.status === "installing")
+    return state.message ?? "正在准备更新…";
   if (state.status === "checking") return "正在检查更新。";
   if (state.status === "available" && state.availableVersion)
     return `发现 ${state.availableVersion}，可手动下载。`;
   if (state.status === "downloading")
     return `正在下载 ${state.availableVersion ?? "更新"}。`;
   if (state.status === "downloaded" && state.downloadedVersion)
-    return `${state.downloadedVersion} 已下载，可安装并重启。`;
+    return (
+      state.message ??
+      `${state.downloadedVersion} 已下载，安装时会等待当前任务结束。`
+    );
   if (state.status === "up-to-date") return "当前已是该通道的最新版本。";
   if (state.status === "error") return state.message ?? "检查更新失败。";
   return "尚未检查远端版本。";
@@ -188,6 +207,8 @@ function versionDescription(state: AppUpdateState | null, legacy: boolean) {
 
 function buttonLabel(state: AppUpdateState | null) {
   if (!state?.enabled) return "检查更新";
+  if (state.status === "preparing") return "取消更新";
+  if (state.status === "installing") return "安装并重启中…";
   if (state.status === "checking") return "检查中…";
   if (state.status === "available") return "下载更新";
   if (state.status === "downloading")

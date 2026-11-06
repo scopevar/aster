@@ -25,6 +25,7 @@ type ToolRoute = {
 };
 export function createScopedIngress(ctx: {
   readonly closing: boolean;
+  readonly updatePreparing?: boolean;
   readonly store: Store | undefined;
   readonly runtime: Runtime | undefined;
   readonly tools: ToolService | undefined;
@@ -170,6 +171,11 @@ export function createScopedIngress(ctx: {
         await readJson(request, 40 * 1024, signal),
       );
       // Authentication, state, deduplication and enqueue are checked together after the body arrives.
+      if (ctx.updatePreparing)
+        throw new AppError(
+          "unavailable",
+          "正在准备更新，Webhook 未接受，请稍后重试。",
+        );
       const event = activeStore.routineOperations.acceptWebhook(id, key, input);
       ctx.notify("webhook");
       reply(response, 202, { accepted: true, event });

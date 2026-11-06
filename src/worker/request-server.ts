@@ -8,6 +8,7 @@ import { ZodError } from "zod";
 import type { Runtime } from "../chat/runtime.js";
 import { AppError } from "../shared/core.js";
 import { workerRoutes } from "../shared/protocol.js";
+import { UPDATE_PREPARING } from "../shared/update-preparation.js";
 import { scriptToolTimeoutMs } from "../shared/tools/scripts.js";
 import type { Store } from "../storage/store.js";
 import { type DataSession } from "./data-session.js";
@@ -49,6 +50,19 @@ export function createWorkerHttpServer(context: Context) {
     if (context.closing) throw new AppError("unavailable", "后台正在关闭。");
     const url = new URL(request.url ?? "/", "http://127.0.0.1");
     signal.throwIfAborted();
+    if (
+      context.dataSession?.updatePreparation.active &&
+      request.method !== "GET" &&
+      ![
+        workerRoutes.updatePreparation,
+        workerRoutes.command,
+        workerRoutes.snapshot,
+        workerRoutes.messageHistory,
+        workerRoutes.messageSearch,
+        workerRoutes.routines,
+      ].some((path) => path === url.pathname)
+    )
+      throw new AppError("unavailable", UPDATE_PREPARING);
     const ctx: HttpContext = {
       request,
       response,

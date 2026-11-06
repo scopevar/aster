@@ -12,6 +12,7 @@ import { AppError } from "../shared/core.js";
 import { type Envelope } from "../shared/commands.js";
 import { type Snapshot } from "../shared/snapshot.js";
 import { localWorkspaceRequestSchema } from "../shared/local-workspace.js";
+import { updatePreparationRequestSchema } from "../shared/update-preparation.js";
 import { workerRoutes } from "../shared/protocol.js";
 import { applyPendingRestore } from "../storage/backup/backup.js";
 import { agentConnectionRoutes } from "./agent-connection-routes.js";
@@ -96,6 +97,9 @@ export async function startWorker(
     },
     get runtime() {
       return dataSession?.runtime;
+    },
+    get updatePreparing() {
+      return dataSession?.updatePreparation.active ?? false;
     },
     get tools() {
       return dataSession?.tools;
@@ -219,7 +223,34 @@ export async function startWorker(
       eventStreams.add(end);
       ctx.response.once("close", () => eventStreams.delete(end));
     }),
+    controlJsonRoute(
+      workerRoutes.updatePreparation,
+      updatePreparationRequestSchema,
+      1024,
+      async (input, ctx) => {
+        if (!dataSession)
+          throw new AppError("unavailable", "本地工作区尚未就绪。");
+        const state = dataSession.updatePreparation.request(
+          input.action,
+          input.id,
+        );
+        if (input.action !== "stop") {
+          reply(ctx.response, 200, state);
+          return;
+        }
+        if (!state.ready)
+          throw new AppError("conflict", "后台仍有未完成工作，未停止。");
+        // Admission stays paused through this synchronous check and drain entry.
+        reply(ctx.response, 200, {});
+        void stop().catch(() =>
+          console.error("update shutdown cleanup failed"),
+        );
+      },
+    ),
     ...controlRoutes({
+      get updatePreparation() {
+        return dataSession?.updatePreparation;
+      },
       checkAgent,
       options,
       directory,

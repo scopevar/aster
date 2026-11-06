@@ -14,6 +14,7 @@ export async function performUpdateInstall(input: {
     finishInstall(): AppUpdateState;
   };
   stopWorker(): Promise<void>;
+  restoreWorker?(): Promise<unknown>;
   held(): boolean;
   release(): void;
   request(): void;
@@ -22,9 +23,15 @@ export async function performUpdateInstall(input: {
   input.updates.beginInstall();
   try {
     await input.stopWorker();
-  } catch {
+  } catch (error) {
     input.updates.cancelInstall();
-    throw new AppError("unavailable", UPDATE_STOP_FAILED);
+    if (error instanceof Error && error.name === "AbortError") throw error;
+    throw new AppError(
+      "unavailable",
+      error instanceof AppError
+        ? `${UPDATE_STOP_FAILED}${error.message}`.slice(0, 200)
+        : UPDATE_STOP_FAILED,
+    );
   }
   const held = input.held();
   input.setQuitting(true);
@@ -33,6 +40,14 @@ export async function performUpdateInstall(input: {
   if (state.status === "error") {
     input.setQuitting(false);
     if (held && !input.held()) input.request();
+    try {
+      await input.restoreWorker?.();
+    } catch {
+      throw new AppError(
+        "unavailable",
+        "安装未完成，后台未能恢复，请重新打开应用并核实任务状态。",
+      );
+    }
   }
   return state;
 }

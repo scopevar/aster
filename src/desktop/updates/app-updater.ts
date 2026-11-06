@@ -157,6 +157,7 @@ export class DesktopAppUpdater {
     updateChannel?: UpdateChannel;
     autoUpdate: boolean;
   }) {
+    if (this.action === "install") return;
     const nextChannel = input.updateChannel ?? this.runtime.channel;
     const channelChanged = nextChannel !== this.runtime.channel;
     const autoChanged = input.autoUpdate !== this.runtime.autoUpdate;
@@ -241,10 +242,20 @@ export class DesktopAppUpdater {
     if (this.state.status !== "downloaded" || !this.state.downloadedVersion)
       throw new AppError("invalid_input", NOT_READY);
     this.action = "install";
+    this.commit({ status: "preparing", message: "正在确认后台工作状态…" });
   }
 
-  cancelInstall() {
-    if (this.action === "install") this.action = null;
+  prepareInstall(message: string, stopping = false) {
+    if (this.action === "install")
+      this.commit({ status: stopping ? "installing" : "preparing", message });
+  }
+
+  cancelInstall(message: string | null = null) {
+    if (this.action === "install") {
+      this.action = null;
+      this.commit({ status: "downloaded", message });
+    } else if (message && this.state.downloadedVersion)
+      this.commit({ status: "downloaded", message });
   }
 
   finishInstall() {

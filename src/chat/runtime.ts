@@ -14,6 +14,7 @@ import { groupTurnLimit, type GroupJudge } from "../shared/chat/group-host.js";
 /** Owns two bounded Bot lanes. Shared computer resources retain their own exclusive owner. */
 export class Runtime {
   private stopping = false;
+  private updatePaused = false;
   private readonly active = new Map<
     string,
     { job: Job; controller: AbortController; finished: Promise<void> }
@@ -40,6 +41,13 @@ export class Runtime {
   cancel(runId: string) {
     this.active.get(runId)?.controller.abort();
   }
+  pauseForUpdate(paused: boolean) {
+    this.updatePaused = paused;
+    if (!paused) this.wake();
+  }
+  get updateBusy() {
+    return this.active.size;
+  }
   wake() {
     for (const active of this.active.values())
       if (this.store.runs.getRun(active.job.id)?.status === "cancelling")
@@ -63,7 +71,7 @@ export class Runtime {
       });
   }
   private async pump() {
-    while (!this.stopping && this.active.size < 2) {
+    while (!this.stopping && !this.updatePaused && this.active.size < 2) {
       const job = this.store.runs.claim();
       if (!job) return;
       const controller = new AbortController();

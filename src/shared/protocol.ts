@@ -15,6 +15,7 @@ export const workerRoutes = {
   documentsPreview: "/documents/preview",
   events: "/events",
   health: "/health",
+  updatePreparation: "/update-preparation",
   memory: "/memory",
   memoryShared: "/memory-shared",
   messageHistory: "/message-history",

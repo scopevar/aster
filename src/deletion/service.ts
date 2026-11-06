@@ -10,6 +10,7 @@ export class DeletionService {
   private loop: Promise<void> | undefined;
   private requested = false;
   private stopping = false;
+  private updatePaused = false;
   private readonly shutdown = new AbortController();
   constructor(
     private readonly store: Pick<Store, "deletionOperations">,
@@ -19,6 +20,13 @@ export class DeletionService {
     private readonly cleanup?: Agent["cleanThreads"],
     private readonly cleanupPluginAuth?: (botId: string) => Promise<void>,
   ) {}
+  pauseForUpdate(paused: boolean) {
+    this.updatePaused = paused;
+    if (!paused) this.wake();
+  }
+  get updateBusy() {
+    return Number(this.loop !== undefined);
+  }
   wake() {
     this.requested = true;
     if (this.loop || this.stopping) return;
@@ -37,7 +45,7 @@ export class DeletionService {
       });
   }
   private async pump() {
-    while (!this.stopping) {
+    while (!this.stopping && !this.updatePaused) {
       const job = this.store.deletionOperations.deletionNext();
       if (!job) return;
       this.store.deletionOperations.deletionStart(job.id);

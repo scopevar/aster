@@ -10,6 +10,12 @@ export class RoutineScheduler {
     private readonly store: Pick<Store, "routineOperations">,
     private readonly runtime: Runtime,
   ) {}
+  pauseForUpdate(paused: boolean) {
+    if (paused) {
+      clearTimeout(this.timer);
+      this.timer = undefined;
+    } else this.start();
+  }
   start() {
     if (this.timer || this.stopped) return;
     this.tick();

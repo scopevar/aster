@@ -46,6 +46,10 @@ export class AvatarCommands {
     return task.finally(() => this.imageJobs.delete(task));
   }
 
+  get updateBusy() {
+    return this.imageJobs.size;
+  }
+
   async stop() {
     this.stopping = true;
     await Promise.allSettled([...this.imageJobs]);

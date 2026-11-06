@@ -2,6 +2,7 @@ import { workerRoutes } from "../shared/protocol.js";
 import { AppError } from "../shared/core.js";
 import { envelopeSchema, type Envelope } from "../shared/commands.js";
 import type { WorkspaceCommands } from "./commands.js";
+import type { UpdatePreparation } from "./update-preparation.js";
 import { asyncCommandKind, type AsyncCommandKind } from "./dispatch.js";
 import type { WakeTopic, WorkerRoute } from "./http-routes.js";
 import { controlJsonRoute, reply, replyAfterAbort } from "./http-routes.js";
@@ -19,6 +20,7 @@ export function controlRoutes(owner: {
     }
   >;
   notify(topic: WakeTopic): void;
+  readonly updatePreparation?: UpdatePreparation | undefined;
   readonly commands: WorkspaceCommands | undefined;
 }): readonly WorkerRoute[] {
   return [
@@ -27,6 +29,7 @@ export function controlRoutes(owner: {
       envelopeSchema,
       2 * 1024 * 1024 + 4096,
       async (envelope, ctx) => {
+        owner.updatePreparation?.command(envelope.command);
         if (envelope.command.type === "agent.check") {
           await owner.checkAgent();
           reply(ctx.response, 200, {});

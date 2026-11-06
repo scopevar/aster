@@ -16,7 +16,7 @@ import { z } from "zod";
 import { homedir, machine } from "node:os";
 import { join } from "node:path";
 import { resolveAppDataDirectory } from "../platform/app-data-directory.js";
-import { ensureDaemon, stopDaemon, daemonStatus } from "../daemon/lifecycle.js";
+import { ensureDaemon, stopDaemon } from "../daemon/lifecycle.js";
 import { ControlWindow } from "./windows/control-window.js";
 import { pathToFileURL } from "node:url";
 import { DesktopDiagnostics } from "./native/diagnostics.js";
@@ -314,13 +314,7 @@ if (!locked) {
       registerFileHandlers(handlers);
       registerTemplateFileHandlers(handlers, dataDirectory);
       registerNativeHandlers(handlers);
-      registerUpdateHandlers(handlers, updates, async () => {
-        if (await daemonStatus(dataDirectory))
-          throw new AppError(
-            "conflict",
-            "请先明确停止本机 daemon，再安装更新；未自动停止独立任务。",
-          );
-      });
+      registerUpdateHandlers(handlers, updates, dataDirectory, startBackground);
       routineWindow = new RoutineWindowController({
         page,
         preload: join(__dirname, "preload.cjs"),

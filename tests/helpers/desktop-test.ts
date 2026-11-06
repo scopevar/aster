@@ -43,7 +43,8 @@ export const test = base.extend<{ desktop: Desktop }>({
             ),
           );
           env.ASTER_DATA_DIR = directory;
-          env.ASTER_DISABLE_AUTO_UPDATE = "1";
+          env.ASTER_DISABLE_AUTO_UPDATE =
+            options.env?.ASTER_DISABLE_AUTO_UPDATE ?? "1";
           delete env.ELECTRON_RUN_AS_NODE;
           delete env.ELECTRON_RENDERER_URL;
           app = await electron.launch({

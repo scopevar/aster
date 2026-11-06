@@ -19,6 +19,7 @@ import { defaultSecretBox, type SecretBox } from "../security/secret.js";
 import { Store } from "../storage/store.js";
 import { ToolService } from "../tools/service.js";
 import { SessionRequests } from "./session-requests.js";
+import { UpdatePreparation } from "./update-preparation.js";
 import { SandboxService } from "../sandbox/service.js";
 
 export type DataSession = Awaited<ReturnType<typeof openDataSession>>;
@@ -86,7 +87,7 @@ export async function openDataSession(
       deps.agent.cleanThreads?.bind(deps.agent),
       oauth.removeBot.bind(oauth),
     );
-    return {
+    const session = {
       directory,
       workspace,
       store,
@@ -102,6 +103,7 @@ export async function openDataSession(
       deletions,
       requests: new SessionRequests(),
     };
+    return { ...session, updatePreparation: new UpdatePreparation(session) };
   } catch (error) {
     await oauth?.close();
     scheduler?.stop();
@@ -122,6 +124,7 @@ export function wakeDataSession(session: DataSession) {
   session.scheduler.start();
 }
 export async function closeDataSession(session: DataSession) {
+  session.updatePreparation.close();
   const requests = session.requests.close();
   const avatars = session.avatars.stop();
   session.commands.stop();
