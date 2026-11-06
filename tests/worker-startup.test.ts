@@ -18,6 +18,40 @@ import { randomUUID } from "node:crypto";
 import { resultSchema } from "../src/shared/core.js";
 import { workerSnapshot } from "./helpers/worker-snapshot.js";
 
+async function workerDirectory(prefix: string) {
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const directory = await mkdtemp(join(tmpdir(), prefix));
+    // Keep fixture listeners below Linux's default ephemeral range (32768+).
+    // Otherwise unrelated outgoing connections can occupy the hashed port.
+    const port = portForDirectory(directory);
+    if (port >= 32768) {
+      await rm(directory, { recursive: true, force: true });
+      continue;
+    }
+    const probe = createServer();
+    try {
+      await new Promise<void>((resolve, reject) => {
+        probe.once("error", reject);
+        probe.listen(port, "127.0.0.1", resolve);
+      });
+    } catch (error) {
+      await rm(directory, { recursive: true, force: true });
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        (error.code === "EADDRINUSE" || error.code === "EACCES")
+      )
+        continue;
+      throw error;
+    }
+    await new Promise<void>((resolve, reject) =>
+      probe.close((error) => (error ? reject(error) : resolve())),
+    );
+    return directory;
+  }
+  throw new Error("No available worker fixture port below 32768");
+}
+
 async function stop(endpoint: Endpoint) {
   await callWorker(endpoint, "/command", {
     id: randomUUID(),
@@ -64,7 +98,7 @@ await test("worker directory ownership excludes alternate ports and directory al
 });
 
 await test("bundled worker reports corrupt SQLite immediately, preserves it, and recovers after an explicit fixture repair", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "aster-worker-corrupt-"));
+  const directory = await workerDirectory("aster-worker-corrupt-");
   // Signed-out (guest) local data lives under accounts/guest, not the top-level directory.
   const accountDir = join(directory, "accounts", "guest");
   const path = join(accountDir, "aster.sqlite");
@@ -95,7 +129,7 @@ await test("bundled worker reports corrupt SQLite immediately, preserves it, and
 });
 
 await test("concurrent bundled launchers connect one owner, detect a stale PID and restart after orderly shutdown", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "aster-worker-launch-"));
+  const directory = await workerDirectory("aster-worker-launch-");
   let endpoint: Endpoint | undefined;
   try {
     const attempts = await Promise.allSettled([
@@ -134,7 +168,7 @@ await test("concurrent bundled launchers connect one owner, detect a stale PID a
 });
 
 await test("an occupied TCP port fails without opening the database, and releasing it allows a normal start", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "aster-worker-port-"));
+  const directory = await workerDirectory("aster-worker-port-");
   const occupant = createServer((socket) => socket.destroy());
   let endpoint: Endpoint | undefined;
   try {
@@ -168,7 +202,7 @@ await test("an occupied TCP port fails without opening the database, and releasi
 });
 
 await test("abrupt death releases the OS lease and recovery preserves committed user data", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "aster-worker-crash-"));
+  const directory = await workerDirectory("aster-worker-crash-");
   let endpoint: Endpoint | undefined;
   try {
     endpoint = await connectWorker(directory, resolve("dist/worker/main.js"));
