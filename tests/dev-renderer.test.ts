@@ -3,8 +3,35 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { createServer, type ViteDevServer } from "vite";
+import { createServer, optimizeDeps, type ViteDevServer } from "vite";
+import { resolveConfig } from "electron-vite";
 import config from "../electron.vite.config.js";
+
+await test("electron-vite renderer entries support dependency scanning", async () => {
+  // The direct Vite server test below bypasses electron-vite's entry defaults.
+  // Scan the resolved configuration so invalid merged entries fail here too.
+  const cacheDir = await mkdtemp(join(tmpdir(), "aster-dev-scan-"));
+  let server: ViteDevServer | undefined;
+  try {
+    const resolved = await resolveConfig({}, "serve");
+    assert.ok(resolved.config?.renderer);
+    server = await createServer({
+      ...resolved.config.renderer,
+      configFile: false,
+      envFile: false,
+      cacheDir,
+      logLevel: "silent",
+      optimizeDeps: { noDiscovery: true, include: [] },
+      server: { middlewareMode: true, watch: null },
+    });
+    const dependencies = await optimizeDeps(server.config, true);
+    assert.ok(dependencies.optimized.react);
+    assert.ok(dependencies.optimized["react-dom/client"]);
+  } finally {
+    await server?.close();
+    await rm(cacheDir, { recursive: true, force: true });
+  }
+});
 
 await test("parallel development renderers serve their own worktrees on distinct ports", async () => {
   // Exercise the actual renderer configuration and Vite listeners, including

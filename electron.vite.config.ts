@@ -64,10 +64,10 @@ export default defineConfig({
     build: {
       outDir: resolve(projectRoot, "dist/renderer-vite"),
       rollupOptions: {
-        input: [
-          resolve(projectRoot, "src/ui/index.html"),
-          resolve(projectRoot, "src/ui/routines.html"),
-        ],
+        input: {
+          index: resolve(projectRoot, "src/ui/index.html"),
+          routines: resolve(projectRoot, "src/ui/routines.html"),
+        },
       },
     },
   },
