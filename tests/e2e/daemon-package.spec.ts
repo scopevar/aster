@@ -67,7 +67,12 @@ test("installed desktop reuses Electron Node mode and explicitly stops it withou
       join(packageDirectory, "aster.exe"),
     );
     const page = await desktop.firstWindow();
-    await expect(page.locator(".sidebar")).toBeVisible();
+    await expect(
+      page.getByRole("complementary", {
+        name: "\u5e94\u7528\u4fa7\u680f",
+        exact: true,
+      }),
+    ).toBeVisible();
     await page.reload();
     await expect(
       page.getByRole("dialog", { name: "登录 Aster", exact: true }),
@@ -125,7 +130,12 @@ test("installed desktop reuses Electron Node mode and explicitly stops it withou
       join(packageDirectory, "aster.exe"),
     );
     const reopened = await desktop.firstWindow();
-    await expect(reopened.locator(".sidebar")).toBeVisible();
+    await expect(
+      reopened.getByRole("complementary", {
+        name: "\u5e94\u7528\u4fa7\u680f",
+        exact: true,
+      }),
+    ).toBeVisible();
     expect((await readWorker(directory)).role).toBe("execution");
     await desktop.close();
     desktop = undefined;
