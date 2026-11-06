@@ -15,6 +15,7 @@ export async function daemonCli(
     ? `${action} ${request.data.command.type} [${request.data.id}]`
     : action;
   const started = performance.now();
+  const input = body === undefined ? "" : JSON.stringify(body);
   const child = spawn(
     launch?.executable ?? process.execPath,
     [
@@ -33,7 +34,11 @@ export async function daemonCli(
     errors: Buffer[] = [];
   child.stdout.on("data", (chunk: Buffer) => output.push(chunk));
   child.stderr.on("data", (chunk: Buffer) => errors.push(chunk));
-  child.stdin.end(body === undefined ? "" : JSON.stringify(body));
+  let inputError: Error | undefined;
+  child.stdin.on("error", (error: Error) => {
+    inputError = error;
+  });
+  child.stdin.end(input);
   return await new Promise<unknown>((resolvePromise, reject) => {
     child.once("error", reject);
     child.once("close", (code, signal) => {
@@ -44,6 +49,14 @@ export async function daemonCli(
           ),
         );
       else {
+        if (inputError) {
+          reject(
+            new Error(`${operation}: CLI input channel failed`, {
+              cause: inputError,
+            }),
+          );
+          return;
+        }
         try {
           resolvePromise(JSON.parse(Buffer.concat(output).toString("utf8")));
         } catch (error) {
