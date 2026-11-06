@@ -5,17 +5,17 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import sharp from "sharp";
 import { DocumentReader } from "../src/documents/reader.js";
 import { DocumentSession } from "../src/documents/service.js";
 import type { Command } from "../src/shared/commands.js";
 import { Store } from "../src/storage/store.js";
 import { ToolService } from "../src/tools/service.js";
+import { sampleWord } from "./helpers/office.js";
 import { samplePdf } from "./helpers/pdf.js";
 
 const reader = () =>
   new DocumentReader(
-    new URL("../dist/documents/pdf-worker.js", import.meta.url),
+    new URL("../dist/documents/office-worker.js", import.meta.url),
   );
 const envelope = (command: Command) => ({
   id: randomUUID(),
@@ -23,85 +23,22 @@ const envelope = (command: Command) => ({
 });
 const signal = () => new AbortController().signal;
 
-await test("real PDF parser extracts text, renders scanned pixels, rejects malformed/range errors and terminates cancelled workers", async () => {
-  const pdf = reader(),
-    bytes = samplePdf("TEXT_PROOF", "SCAN_PROOF");
+// PDF parsing is owned by the sandbox; retain the old boundary's explicit error.
+await test("host PDF operations direct callers to sandbox Python", async () => {
+  const pdf = reader();
   try {
-    assert.deepEqual(await pdf.read(bytes, { action: "info" }, signal()), {
-      action: "info",
-      pages: 2,
-    });
-    const text = await pdf.read(bytes, { action: "text", page: 1 }, signal());
-    assert.ok(text.action === "text");
-    assert.equal(text.text, "TEXT_PROOF");
-    const scan = await pdf.read(bytes, { action: "text", page: 2 }, signal());
-    assert.ok(scan.action === "text");
-    assert.equal(scan.text, "");
-    const image = await pdf.read(
-      bytes,
+    for (const operation of [
+      { action: "info" },
+      { action: "text", page: 1 },
       { action: "render", page: 2 },
-      signal(),
-    );
-    assert.ok(image.action === "render");
-    assert.deepEqual(image.ocr && { status: image.ocr.status }, {
-      status: "ready",
-    });
-    if (image.ocr?.status === "ready") {
-      assert.equal(image.ocr.language, "eng+chi_sim");
-      assert.match(image.ocr.text, /SCAN_PROOF/);
-      assert.match(image.ocr.text, /中文识别/);
-      assert.ok(image.ocr.confidence > 0);
-    }
-    const pixel = await sharp(Buffer.from(image.image, "base64"))
-      .extract({ left: 360, top: 500, width: 1, height: 1 })
-      .removeAlpha()
-      .raw()
-      .toBuffer();
-    assert.deepEqual([...pixel], [0, 0, 255]);
-    await assert.rejects(
-      pdf.read(bytes, { action: "text", page: 3 }, signal()),
-      /只有 2 页/,
-    );
-    await assert.rejects(
-      pdf.read(Buffer.from("%PDF-1.7 broken"), { action: "info" }, signal()),
-      /无法解析/,
-    );
-    const a = new AbortController(),
-      b = new AbortController();
-    const first = pdf.read(bytes, { action: "render", page: 2 }, a.signal),
-      second = pdf.read(bytes, { action: "render", page: 1 }, b.signal);
-    const cancelled = Promise.all([
-      assert.rejects(first, { name: "AbortError" }),
-      assert.rejects(second, { name: "AbortError" }),
-    ]);
-    const queued = Array.from({ length: 6 }, () => new AbortController());
-    const queueCancelled = Promise.all(
-      queued.map((controller) =>
-        assert.rejects(pdf.read(bytes, { action: "info" }, controller.signal), {
-          name: "AbortError",
-        }),
-      ),
-    );
-    await assert.rejects(
-      pdf.read(bytes, { action: "info" }, signal()),
-      /队列已满/,
-    );
-    a.abort();
-    b.abort();
-    for (const controller of queued) controller.abort();
-    await cancelled;
-    await queueCancelled;
-    assert.equal(
-      (await pdf.read(bytes, { action: "info" }, signal())).pages,
-      2,
-    );
+    ] as const)
+      await assert.rejects(
+        pdf.read(samplePdf("TEXT", "SCAN"), operation, signal()),
+        /Python/,
+      );
   } finally {
     await pdf.close();
   }
-  await assert.rejects(
-    pdf.read(bytes, { action: "info" }, signal()),
-    /正在关闭/,
-  );
 });
 
 await test("document reads enforce delivered scope, deduplicate receipts and recover interrupted parsing without replay", async () => {
@@ -118,10 +55,10 @@ await test("document reads enforce delivered scope, deduplicate receipts and rec
       envelope({ type: "bot.create", name: "B", description: "" }),
     );
     assert.ok(a.id && a.conversationId && b.id && b.conversationId);
-    const bytes = samplePdf("PRIVATE", "SCAN");
+    const bytes = sampleWord("PRIVATE");
     const upload = (conversationId: string) =>
       store.files.registerAttachment(
-        { id: randomUUID(), conversationId, name: "proof.pdf" },
+        { id: randomUUID(), conversationId, name: "proof.docx" },
         bytes,
       );
     const received = upload(a.conversationId),
@@ -161,23 +98,23 @@ await test("document reads enforce delivered scope, deduplicate receipts and rec
       assert.throws(
         () =>
           session.request(
-            { callId: id, operation: { action: "info", id } },
+            { callId: id, operation: { action: "word.info", id } },
             signal(),
           ),
         /未向当前运行/,
       );
     const request = {
       callId: "text",
-      operation: { action: "text", id: received.id, page: 1 },
+      operation: { action: "word.text", id: received.id, offset: 0, length: 7 },
     };
     const content = await session.request(request, signal());
-    assert.ok(content.action === "text");
+    assert.ok(content.action === "word.text");
     assert.equal(content.text, "PRIVATE");
     assert.deepEqual(await session.request(request, signal()), content);
     assert.throws(
       () =>
         session.request(
-          { ...request, operation: { ...request.operation, page: 2 } },
+          { ...request, operation: { ...request.operation, offset: 1 } },
           signal(),
         ),
       /改变参数/,
@@ -195,7 +132,7 @@ await test("document reads enforce delivered scope, deduplicate receipts and rec
     const operation = session.request(
       {
         callId: "cancel",
-        operation: { action: "render", id: received.id, page: 2 },
+        operation: { action: "word.info", id: received.id },
       },
       controller.signal,
     );
@@ -208,7 +145,7 @@ await test("document reads enforce delivered scope, deduplicate receipts and rec
     );
     await session.close();
     store.documentOperations.documentBegin(job, "interrupted", {
-      action: "info",
+      action: "word.info",
       id: received.id,
     });
     store.close();
@@ -312,7 +249,7 @@ await test("group PDF scope excludes drafts, private attachments and queued futu
   }
 });
 
-await test("runtime cancellation revokes the PDF capability immediately and drains the actual parser before scope close", async () => {
+await test("runtime cancellation revokes the document capability immediately and drains the actual parser before scope close", async () => {
   const store = new Store(":memory:"),
     pdf = reader();
   try {
@@ -324,9 +261,9 @@ await test("runtime cancellation revokes the PDF capability immediately and drai
       {
         id: randomUUID(),
         conversationId: bot.conversationId,
-        name: "cancel.pdf",
+        name: "cancel.docx",
       },
-      samplePdf("CANCEL", "SCAN"),
+      sampleWord("CANCEL"),
     );
     store.execute(
       envelope({
@@ -343,7 +280,7 @@ await test("runtime cancellation revokes the PDF capability immediately and drai
       scope = tools.open(job, controller.signal);
     const pending = tools.documents(
       scope.connection.token,
-      { callId: "read", operation: { action: "render", id: file.id, page: 2 } },
+      { callId: "read", operation: { action: "word.info", id: file.id } },
       signal(),
     );
     const rejected = assert.rejects(pending, { name: "AbortError" });

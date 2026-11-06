@@ -124,11 +124,7 @@ if (!locked) {
   const startBackground = () =>
     ensureDaemon(dataDirectory, {
       executable: app.isPackaged
-        ? join(
-            process.resourcesPath,
-            "daemon-runtime",
-            process.platform === "win32" ? "node.exe" : "node",
-          )
+        ? process.execPath
         : process.env.ASTER_NODE_BIN || "node",
       script: app.isPackaged
         ? join(

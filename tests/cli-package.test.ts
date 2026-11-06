@@ -53,7 +53,10 @@ await test(
       daemonCli(directory, action, body, environment, launch);
     const parsers = new DocumentReader(
       pathToFileURL(
-        join(installed, "node_modules/@aster/cli/dist/documents/pdf-worker.js"),
+        join(
+          installed,
+          "node_modules/@aster/cli/dist/documents/office-worker.js",
+        ),
       ),
     );
     try {
@@ -170,21 +173,14 @@ await test(
       assert.equal(legacy.cells[0]?.[0]?.value, "BIFF8_真实公式");
       assert.equal(legacy.cells[1]?.[2]?.formula, "A2+B2");
       const pdf = samplePdf("PACKAGE_TEXT", "PACKAGE_SCAN");
-      const text = await parsers.read(
-        pdf,
-        { action: "text", page: 1 },
-        AbortSignal.timeout(30000),
+      await assert.rejects(
+        parsers.read(
+          pdf,
+          { action: "text", page: 1 },
+          AbortSignal.timeout(30000),
+        ),
+        /Python/,
       );
-      assert.ok(text.action === "text");
-      assert.equal(text.text, "PACKAGE_TEXT");
-      const image = await parsers.read(
-        pdf,
-        { action: "render", page: 2 },
-        AbortSignal.timeout(60000),
-      );
-      assert.ok(image.action === "render");
-      assert.ok(image.width > 0 && image.height > 0);
-      assert.equal(image.ocr?.status, "ready");
       await cli("stop");
       assert.equal(await daemonStatus(directory), null);
       await cli("start");

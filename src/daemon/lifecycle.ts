@@ -81,7 +81,9 @@ export async function ensureDaemon(
       return existing;
     }
     const log = await open(join(directory, "daemon.log"), "a", 0o600);
-    delete env.ELECTRON_RUN_AS_NODE;
+    if (process.versions.electron && launch.executable === process.execPath)
+      env.ELECTRON_RUN_AS_NODE = "1";
+    else delete env.ELECTRON_RUN_AS_NODE;
     delete env.ASTER_SUPERVISION_ID;
     let failure: string | undefined;
     try {

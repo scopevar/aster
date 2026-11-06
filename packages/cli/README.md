@@ -27,4 +27,4 @@ Windows 使用当前用户 DPAPI。Linux 安装 `secret-tool` 并提供可用的
 
 已有 Electron safeStorage 密文不会重置或自动迁移。兼容读取或显式 `migrate-secrets` 需要原保护上下文：可指定 `ASTER_ELECTRON_BIN` 和 `ASTER_ELECTRON_APP` 指向原安装程序/保护助手；这仅用于读取旧包装。明确停止 daemon 后执行 `aster --data-dir <目录> migrate-secrets`，将原 AES 密钥重新包装到 Windows 当前用户 DPAPI 或 Linux 系统密钥环，原 Bot、会话和凭据密文保持不变。迁移后无需 Electron。密钥环不可用、密钥丢失或包装损坏会拒绝操作并保留原文件。旧版本无法读取新包装，回退必须恢复迁移前的一致备份及原保护上下文。
 
-包内包含执行核心、MCP 服务、文档解析线程、OCR 数据及 Microsandbox 脚本执行服务。原生模块由安装工具按目标 Node/系统安装。Desktop 使用同一包，并额外附带匹配的 Node；普通桌面用户无需另装 CLI 或系统 Node。不同系统的安装目录不可直接复制互换。
+包内包含执行核心、MCP 服务、文档解析线程、Microsandbox 脚本执行服务。原生模块由安装工具按目标 Node/系统安装。Desktop 使用同一包，并复用 Electron 内置的 Node；普通桌面用户无需另装 CLI 或系统 Node。不同系统的安装目录不可直接复制互换。

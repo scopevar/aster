@@ -12,7 +12,7 @@ if (
 )
   throw new Error("更新仓库必须使用 owner/repo 格式。");
 
-// Desktop 使用 Electron；daemon 自带独立 Node，原生依赖须兼容其 Node-API。
+// Desktop and its detached daemon share the Electron executable.
 /** @type {import("electron-builder").Configuration} */
 const config = {
   appId: "com.scopevar.aster",
@@ -21,6 +21,7 @@ const config = {
   directories: { output: "release" },
   npmRebuild: true,
   asar: true,
+  electronLanguages: ["en-US", "zh-CN"],
   publish: null,
   beforePack: stageDaemonRuntime,
   extraResources: [
@@ -49,24 +50,19 @@ const config = {
     "!node_modules/emojibase-data/**",
     "!node_modules/react/**",
     "!node_modules/react-dom/**",
-    // 识别读取 dist/documents/tessdata。这里的大模型是另一套。
-    "!node_modules/@tesseract.js-data/**",
-    // createWorker 使用 OEM LSTM_ONLY，只加载带 -lstm 的三套。
-    "!node_modules/tesseract.js-core/tesseract-core.js",
-    "!node_modules/tesseract.js-core/tesseract-core.wasm",
-    "!node_modules/tesseract.js-core/tesseract-core.wasm.js",
-    "!node_modules/tesseract.js-core/tesseract-core-simd.js",
-    "!node_modules/tesseract.js-core/tesseract-core-simd.wasm",
-    "!node_modules/tesseract.js-core/tesseract-core-simd.wasm.js",
-    "!node_modules/tesseract.js-core/tesseract-core-relaxedsimd.js",
-    "!node_modules/tesseract.js-core/tesseract-core-relaxedsimd.wasm",
-    "!node_modules/tesseract.js-core/tesseract-core-relaxedsimd.wasm.js",
-    // 界面使用 dist 里的 pdf.js。Node 端保留 legacy，以及 cmaps、standard_fonts、wasm。
-    "!node_modules/pdfjs-dist/build/**",
+    // Browser bundles contain PDF.js and UI dependencies; Canvas is test-only.
+    "!node_modules/pdfjs-dist/**",
+    "!node_modules/@napi-rs/canvas*/**",
+    "!node_modules/lucide-react/**",
+    "!node_modules/@heroui/**",
+    "!node_modules/react-aria/**",
+    "!node_modules/react-aria-components/**",
+    "!node_modules/react-stately/**",
+    "!node_modules/@adobe/react-spectrum*/**",
+    "!node_modules/@spectrum-icons/**",
   ],
   linux: {
     target: ["AppImage", "deb"],
-    electronLanguages: ["en-US", "zh-CN"],
     // 单个 PNG 会按原图像素建目录。1254 不在 hicolor 索引里，启动器会显示 Electron 齿轮。
     icon: "build/icons",
     category: "Utility",

@@ -15,7 +15,7 @@ import { Store } from "../src/storage/store.js";
 import { officeZip, sampleWord, sampleWorkbook } from "./helpers/office.js";
 const reader = () =>
   new DocumentReader(
-    new URL("../dist/documents/pdf-worker.js", import.meta.url),
+    new URL("../dist/documents/office-worker.js", import.meta.url),
   );
 const signal = () => new AbortController().signal;
 const envelope = (command: Command) => ({

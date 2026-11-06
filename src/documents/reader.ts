@@ -10,7 +10,6 @@ import { z } from "zod";
 import { AppError, failureSchema } from "../shared/core.js";
 import {
   pdfOperationSchema,
-  pdfResultSchema,
   type PdfOperation,
   type PdfResult,
 } from "../shared/files/documents.js";
@@ -35,25 +34,18 @@ export class DocumentReader {
   private readonly queued = new Set<{ start(): void; stop(): void }>();
   private readonly tasks = new Set<Promise<unknown>>();
   private active = new Set<{ worker: Worker; finished: Promise<void> }>();
-  constructor(
-    private readonly executable: URL,
-    private readonly officeExecutable = new URL(
-      "./office-worker.js",
-      executable,
-    ),
-  ) {}
+  constructor(private readonly officeExecutable: URL) {}
 
   async read(
-    bytes: Uint8Array,
+    _bytes: Uint8Array,
     operation: PdfOperation,
     signal: AbortSignal,
   ): Promise<PdfResult> {
-    return this.execute(
-      this.executable,
-      { bytes, operation: pdfOperationSchema.parse(operation) },
-      bytes.byteLength,
-      pdfResultSchema,
-      signal,
+    signal.throwIfAborted();
+    pdfOperationSchema.parse(operation);
+    throw new AppError(
+      "unavailable",
+      "PDF 解析已迁移至沙箱，请通过 shell 使用 Python 处理。",
     );
   }
   async readOffice(

@@ -58,7 +58,7 @@ export async function openDataSession(
     plugins = new PluginService(store, oauth);
     memory = new MemoryService(store, deps.structuredModel);
     pdf = new DocumentReader(
-      new URL("../../dist/documents/pdf-worker.js", import.meta.url),
+      new URL("../../dist/documents/office-worker.js", import.meta.url),
     );
     sandbox = new SandboxService(store, directory, deps.connections);
     const tools = new ToolService(store, deps.port, pdf, oauth, sandbox);

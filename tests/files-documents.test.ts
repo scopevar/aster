@@ -5,10 +5,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { DocumentReader } from "../src/documents/reader.js";
-import { fileModelContent } from "../src/files/model-content.js";
 import { FileSession } from "../src/files/session.js";
 import type { Command } from "../src/shared/commands.js";
-import type { PdfOperation } from "../src/shared/files/documents.js";
+import type {
+  OfficeKind,
+  OfficeOperation,
+} from "../src/shared/files/office.js";
 import type { FileRequest } from "../src/shared/files/files.js";
 import { Store } from "../src/storage/store.js";
 import { ToolService } from "../src/tools/service.js";
@@ -19,9 +21,12 @@ const command = (command: Command) => ({
   id: randomUUID(),
   command,
 });
-const workerUrl = new URL("../dist/documents/pdf-worker.js", import.meta.url);
+const workerUrl = new URL(
+  "../dist/documents/office-worker.js",
+  import.meta.url,
+);
 
-await test("granted directory documents use the real PDF/Word/table parsers and return native page image blocks", async () => {
+await test("granted directory documents use the real Word/table parsers and reject retired host PDF operations", async () => {
   const directory = await mkdtemp(join(tmpdir(), "aster-directory-docs-"));
   const store = new Store(join(directory, "db.sqlite"));
   const reader = new DocumentReader(workerUrl);
@@ -70,9 +75,10 @@ await test("granted directory documents use the real PDF/Word/table parsers and 
         },
         new AbortController().signal,
       );
-    const pdf = await read("proof.pdf", { action: "text", page: 1 });
-    assert.ok(pdf.action === "document" && pdf.result.action === "text");
-    assert.equal(pdf.result.text, proof);
+    await assert.rejects(
+      read("proof.pdf", { action: "text", page: 1 }),
+      /Python/,
+    );
     const word = await read("proof.docx", {
       action: "word.text",
       offset: 0,
@@ -92,18 +98,6 @@ await test("granted directory documents use the real PDF/Word/table parsers and 
       table.action === "document" && table.result.action === "table.range",
     );
     assert.ok(JSON.stringify(table.result).includes(proof));
-    const rendered = await read("proof.pdf", { action: "render", page: 1 });
-    const blocks = fileModelContent(rendered);
-    assert.equal(blocks[0]?.type, "text");
-    assert.equal(blocks[1]?.type, "image");
-    if (blocks[0]?.type === "text")
-      assert.ok(!blocks[0].text.includes('"image":'));
-    if (blocks[1]?.type === "image")
-      assert.ok(
-        Buffer.from(blocks[1].data, "base64")
-          .subarray(0, 8)
-          .equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])),
-      );
     await assert.rejects(read("bad.pdf", { action: "info" }), /PDF/);
     await assert.rejects(read("proof.docx", { action: "info" }), /word|table/);
     await assert.rejects(read("proof.pdf", { action: "word.info" }), /PDF/);
@@ -131,13 +125,15 @@ await test("revoking a grant cancels the actual directory parser through ToolSer
   });
   let actualSignal: AbortSignal | undefined;
   class ObservedReader extends DocumentReader {
-    override read(
+    override readOffice(
       bytes: Uint8Array,
-      operation: PdfOperation,
+      name: string,
+      kind: OfficeKind,
+      operation: OfficeOperation,
       signal: AbortSignal,
     ) {
       actualSignal = signal;
-      const result = super.read(bytes, operation, signal);
+      const result = super.readOffice(bytes, name, kind, operation, signal);
       started();
       return result;
     }
@@ -148,7 +144,7 @@ await test("revoking a grant cancels the actual directory parser through ToolSer
   try {
     const root = join(directory, "granted");
     await mkdir(root);
-    await writeFile(join(root, "proof.pdf"), samplePdf("proof", "scan"));
+    await writeFile(join(root, "proof.docx"), sampleWord("proof"));
     const created = store.execute(
       command({ type: "bot.create", name: "Reader", description: "" }),
     );
@@ -178,8 +174,8 @@ await test("revoking a grant cancels the actual directory parser through ToolSer
         operation: {
           action: "document",
           grantId: grant.id,
-          path: "proof.pdf",
-          operation: { action: "render", page: 2 },
+          path: "proof.docx",
+          operation: { action: "word.info" },
         },
       },
       new AbortController().signal,
@@ -199,13 +195,15 @@ await test("revoking a grant cancels the actual directory parser through ToolSer
     await scope.close();
     assert.equal(
       (
-        await reader.read(
-          samplePdf("STILL_AVAILABLE", "scan"),
-          { action: "info" },
+        await reader.readOffice(
+          sampleWord("STILL_AVAILABLE"),
+          "proof.docx",
+          "docx",
+          { action: "word.info" },
           new AbortController().signal,
         )
       ).action,
-      "info",
+      "word.info",
     );
   } finally {
     await scope?.close();

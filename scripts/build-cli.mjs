@@ -23,7 +23,6 @@ export async function buildCli() {
     ["src/tools/mcp-server.ts", "tools/mcp-server.js"],
     ["src/sandbox/worker.ts", "sandbox/worker.js"],
     ["src/documents/office-worker.ts", "documents/office-worker.js"],
-    ["src/documents/pdf-worker.ts", "documents/pdf-worker.js"],
     ["scripts/model-auth.ts", "scripts/model-auth.js"],
   ];
   const inputs = new Set();
@@ -88,18 +87,6 @@ export async function buildCli() {
     ["dist/LICENSE", "xlsx-codepage-LICENSE"],
   ])
     await cp(join(xlsxDirectory, source), join(output, "licenses", name));
-  await mkdir(join(output, "documents/tessdata"), { recursive: true });
-  for (const [language, file] of [
-    ["eng", "eng.traineddata.gz"],
-    ["chi_sim", "chi_sim.traineddata.gz"],
-  ])
-    await cp(
-      join(
-        root,
-        `node_modules/@tesseract.js-data/${language}/4.0.0_best_int/${file}`,
-      ),
-      join(output, "documents/tessdata", file),
-    );
   await writeFile(
     join(output, "build-inputs.json"),
     JSON.stringify([...inputs].sort(), null, 2) + "\n",

@@ -32,9 +32,7 @@ for (const mode of ["external", "bundled"] as const) {
       timers.add(timer);
     });
     const executable =
-      mode === "external"
-        ? process.execPath
-        : join(installed, "resources/daemon-runtime/node.exe");
+      mode === "external" ? process.execPath : join(installed, "aster.exe");
     const script =
       mode === "external"
         ? join(
@@ -46,7 +44,13 @@ for (const mode of ["external", "bundled"] as const) {
             "resources/app.asar.unpacked/node_modules/@aster/cli/dist/cli/main.js",
           );
     const cli = (action: string, body?: unknown) =>
-      daemonCli(directory, action, body, {}, { executable, script });
+      daemonCli(
+        directory,
+        action,
+        body,
+        { ELECTRON_RUN_AS_NODE: mode === "bundled" ? "1" : "" },
+        { executable, script },
+      );
     let desktop: Awaited<ReturnType<typeof standaloneDesktop>> | undefined;
     try {
       if (mode === "external") await cli("start");

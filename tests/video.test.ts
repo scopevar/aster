@@ -247,7 +247,7 @@ await test("video document reads preserve delivered scope and receipts, and a ca
   const directory = await mkdtemp(join(tmpdir(), "aster-video-scope-"));
   const store = new Store(":memory:");
   const reader = new DocumentReader(
-    new URL("../dist/documents/pdf-worker.js", import.meta.url),
+    new URL("../dist/documents/office-worker.js", import.meta.url),
   );
   let session: DocumentSession | undefined;
   try {

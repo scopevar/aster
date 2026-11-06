@@ -21,7 +21,7 @@ const packageDirectory = resolve(
   process.env.ASTER_PACKAGE_DIR ?? "release/win-unpacked",
 );
 
-test("installed desktop bundles an independent runtime and explicitly stops it without system Node", async ({}, info) => {
+test("installed desktop reuses Electron Node mode and explicitly stops it without system Node", async ({}, info) => {
   test.skip(
     process.platform !== "win32" || !process.env.ASTER_PACKAGE_TEST,
     "Requires the local Windows package.",
@@ -42,15 +42,15 @@ test("installed desktop bundles an independent runtime and explicitly stops it w
   };
   let desktop: Awaited<ReturnType<typeof standaloneDesktop>> | undefined;
   try {
-    const runtime = join(packageDirectory, "resources/daemon-runtime/node.exe");
+    const runtime = join(packageDirectory, "aster.exe");
     const { stdout } = await promisify(execFile)(
       runtime,
       [
         "--input-type=module",
         "-e",
         `
-      import sharp from 'sharp'; import { createCanvas } from '@napi-rs/canvas';
-      const image = await sharp(createCanvas(2, 2).toBuffer('image/png')).metadata();
+      import sharp from 'sharp';
+      const image = await sharp({ create: { width: 2, height: 2, channels: 3, background: 'blue' } }).png().toBuffer().then(bytes => sharp(bytes).metadata());
       if (image.width !== 2) throw Error('packaged native image runtime failed');
       console.log('native image runtime ready');
     `,
@@ -58,6 +58,7 @@ test("installed desktop bundles an independent runtime and explicitly stops it w
       {
         cwd: join(packageDirectory, "resources/app.asar.unpacked"),
         windowsHide: true,
+        env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" },
       },
     );
     expect(stdout).toContain("native image runtime ready");
@@ -137,7 +138,7 @@ test("installed desktop bundles an independent runtime and explicitly stops it w
   }
 });
 
-test("installed CLI configures and executes with only its bundled Node", async () => {
+test("installed CLI configures and executes through Electron Node mode", async () => {
   test.skip(
     process.platform !== "win32" || !process.env.ASTER_PACKAGE_TEST,
     "Requires the local Windows package",
@@ -146,6 +147,7 @@ test("installed CLI configures and executes with only its bundled Node", async (
   const model = await piModelServer();
   const systemRoot = process.env.SystemRoot ?? "C:\\Windows";
   const environment = {
+    ELECTRON_RUN_AS_NODE: "1",
     PATH: [
       systemRoot,
       join(systemRoot, "System32"),
@@ -153,7 +155,7 @@ test("installed CLI configures and executes with only its bundled Node", async (
     ].join(";"),
   };
   const launch = {
-    executable: join(packageDirectory, "resources/daemon-runtime/node.exe"),
+    executable: join(packageDirectory, "aster.exe"),
     script: join(
       packageDirectory,
       "resources/app.asar.unpacked/node_modules/@aster/cli/dist/cli/main.js",

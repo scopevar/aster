@@ -57,6 +57,7 @@ function buildRenderer(entry, outfile) {
 }
 await rm("dist/renderer", { recursive: true, force: true });
 await mkdir("dist/renderer", { recursive: true });
+await rm("dist/documents", { recursive: true, force: true });
 await rm("dist/computer", { recursive: true, force: true });
 await writeFile("dist/package.json", '{ "type": "module" }\n');
 await buildIcons();
@@ -110,19 +111,6 @@ await Promise.all([
     format: "esm",
     target: "node22",
     external: ["mammoth", "xlsx", "sharp", "yauzl", "parse5"],
-  }),
-  build({
-    entryPoints: ["src/documents/pdf-worker.ts"],
-    outfile: "dist/documents/pdf-worker.js",
-    bundle: true,
-    platform: "node",
-    format: "esm",
-    target: "node22",
-    external: [
-      "pdfjs-dist/legacy/build/pdf.mjs",
-      "@napi-rs/canvas",
-      "tesseract.js",
-    ],
   }),
   build({
     entryPoints: ["src/desktop/launcher.ts"],
@@ -212,6 +200,7 @@ await writeFile(
 const diagramScript = (
   await readFile("dist/renderer/diagram-frame.js", "utf8")
 ).replace(/<\/script/gi, "<\\/script");
+await rm("dist/renderer/diagram-frame.js");
 const diagramHash = createHash("sha256").update(diagramScript).digest("base64");
 await writeFile(
   "dist/renderer/diagram-frame.html",
@@ -240,12 +229,3 @@ for (const folder of ["cmaps", "standard_fonts", "wasm"])
     recursive: true,
   });
 await copyFile("node_modules/pdfjs-dist/LICENSE", "dist/renderer/pdf/LICENSE");
-await mkdir("dist/documents/tessdata", { recursive: true });
-for (const [pkg, file] of [
-  ["eng", "eng.traineddata.gz"],
-  ["chi_sim", "chi_sim.traineddata.gz"],
-])
-  await copyFile(
-    `node_modules/@tesseract.js-data/${pkg}/4.0.0_best_int/${file}`,
-    `dist/documents/tessdata/${file}`,
-  );
