@@ -43,7 +43,9 @@ export async function lockFile(path: string, releaseAfterMs: number) {
   ]);
   return {
     close: async () => {
-      if (child.exitCode === null) child.stdin.end("release\n");
+      // Timed locks never read stdin and can close it before Node observes exit.
+      if (releaseAfterMs <= 0 && child.exitCode === null)
+        child.stdin.end("release\n");
       await finished;
     },
   };
