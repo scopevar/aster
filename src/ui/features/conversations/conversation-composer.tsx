@@ -97,7 +97,17 @@ export function ConversationComposer({
       )}
       <input
         type="file"
-        ref={fileInput}
+        ref={(element) => {
+          fileInput.current = element;
+          if (!element) return;
+          // React's cancel handler is dialog-only; listen to the file input itself.
+          const restoreFocus = () => input.current?.focus();
+          element.addEventListener("cancel", restoreFocus);
+          return () => {
+            element.removeEventListener("cancel", restoreFocus);
+            fileInput.current = null;
+          };
+        }}
         multiple
         hidden
         accept={attachmentAccept}

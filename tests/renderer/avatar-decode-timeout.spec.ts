@@ -24,7 +24,6 @@ test("slow avatar decode times out and discards the late bitmap", async ({
   await renderer.open();
   await page.locator(".bot-item", { hasText: "头像超时" }).click();
   await page.locator(".conversation-title").click();
-  await page.getByRole("button", { name: "Bot 设置", exact: true }).click();
   await page
     .getByRole("button", { name: "编辑 Bot 头像", exact: true })
     .click();

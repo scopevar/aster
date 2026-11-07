@@ -254,7 +254,17 @@ export function GroupDraftView({
             multiple
             accept={attachmentAccept}
             aria-label="选择群聊附件"
-            ref={fileInput}
+            ref={(element) => {
+              fileInput.current = element;
+              if (!element) return;
+              // React's cancel handler is dialog-only; listen to the file input itself.
+              const restoreFocus = () => input.current?.focus();
+              element.addEventListener("cancel", restoreFocus);
+              return () => {
+                element.removeEventListener("cancel", restoreFocus);
+                fileInput.current = null;
+              };
+            }}
             onChange={(e) => {
               void addFiles(Array.from(e.target.files ?? []));
               e.target.value = "";

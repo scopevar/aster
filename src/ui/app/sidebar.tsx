@@ -132,7 +132,10 @@ export function Sidebar({
             if (!identity) return null;
             const unread = c.unreadCount > 0 || c.markedUnread;
             return (
-              <Tooltip content={identity.name} key={c.id}>
+              <Tooltip
+                content={collapsed ? identity.name : undefined}
+                key={c.id}
+              >
                 <Button
                   variant="ghost"
                   size="sm"

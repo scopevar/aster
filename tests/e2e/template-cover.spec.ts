@@ -67,7 +67,6 @@ test("GIF and BMP template covers decode in Electron, save as WebP and survive r
     await page.getByLabel("名称", { exact: true }).fill("封面格式");
     await page.getByRole("button", { name: "创建 Bot", exact: true }).click();
     await page.locator(".conversation-title").click();
-    await page.getByRole("button", { name: "Bot 设置", exact: true }).click();
     await openBotAction(page, "本地模板");
     const local = page.getByRole("dialog", { name: "本地模板", exact: true });
     await local.getByLabel("包含技能", { exact: true }).uncheck();
@@ -186,7 +185,6 @@ test("GIF and BMP template covers decode in Electron, save as WebP and survive r
     page = await app.firstWindow();
     await page.locator(".bot-item", { hasText: "封面格式" }).click();
     await page.locator(".conversation-title").click();
-    await page.getByRole("button", { name: "Bot 设置", exact: true }).click();
     await openBotAction(page, "本地模板");
     const reopened = page.getByRole("dialog", {
       name: "本地模板",

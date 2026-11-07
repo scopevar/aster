@@ -20,9 +20,12 @@
 .conversation-title {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 0;
+  gap: 8px;
+  padding: 0 8px;
+  margin-left: -8px;
+  min-width: 0;
   max-width: 280px;
+  border-radius: 8px;
   white-space: nowrap;
   overflow: hidden;
 }
@@ -30,6 +33,11 @@
   font-size: 13px;
   text-overflow: ellipsis;
   overflow: hidden;
+}
+.conversation-header > .conversation-kind {
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 11px;
 }
 .recipient {
   display: flex;

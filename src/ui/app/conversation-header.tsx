@@ -52,7 +52,11 @@ export function ConversationHeader({
           variant="ghost"
           size="sm"
           className="conversation-title"
-          onClick={() => setDetails(!details)}
+          aria-expanded={details}
+          onPress={() => {
+            if (!details && !conversation?.group) setDetailsView("settings");
+            setDetails(!details);
+          }}
         >
           {conversation?.group ? (
             <GroupAvatar
@@ -115,6 +119,7 @@ export function ConversationHeader({
         <IconButton
           variant="ghost"
           size="sm"
+          className="icon-button"
           aria-label="管理本地插件"
           onPress={() => setModal("plugins")}
         >
@@ -125,6 +130,7 @@ export function ConversationHeader({
         <IconButton
           variant="ghost"
           size="sm"
+          className="icon-button"
           aria-label="查看并管理任务"
           isPending={openingRoutines}
           onPress={() => onOpenRoutines(bot.id)}
@@ -136,6 +142,7 @@ export function ConversationHeader({
         <IconButton
           variant="ghost"
           size="sm"
+          className="icon-button"
           aria-label="群聊详情"
           aria-expanded={details}
           onPress={() => setDetails(!details)}
@@ -147,21 +154,24 @@ export function ConversationHeader({
         <div className="details-heading">
           {detailsView === "settings" ? (
             <>
-              <IconButton
-                variant="ghost"
-                size="sm"
-                className="back-icon"
-                aria-label="返回 Bot 概览"
-                onPress={() => setDetailsView("overview")}
-              >
-                <Icon name="chevron" size={16} />
-              </IconButton>
+              {conversation?.group && (
+                <IconButton
+                  variant="ghost"
+                  size="sm"
+                  className="icon-button back-icon"
+                  aria-label="返回 Bot 概览"
+                  onPress={() => setDetailsView("overview")}
+                >
+                  <Icon name="chevron" size={16} />
+                </IconButton>
+              )}
               <strong>设置</strong>
             </>
           ) : (
             <IconButton
               variant="ghost"
               size="sm"
+              className="icon-button"
               aria-label="Bot 设置"
               onPress={() => setDetailsView("settings")}
             >
@@ -171,6 +181,7 @@ export function ConversationHeader({
           <IconButton
             variant="ghost"
             size="sm"
+            className="icon-button"
             aria-label="收起 Bot 详情"
             onPress={() => setDetails(false)}
           >

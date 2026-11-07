@@ -485,15 +485,12 @@ test("real desktop + Pi: create, stream, resume, react, persist drafts and reope
     ).toContainText("MARKET_IMPORT_OK");
     await replyWindow.locator(".conversation-title").click();
     await expect(
-      replyWindow.getByRole("complementary", { name: "Bot 概览" }),
+      replyWindow.getByRole("complementary", { name: "Bot 设置" }),
     ).toBeVisible();
     await replyWindow.screenshot({
-      path: test.info().outputPath("bot-overview.png"),
+      path: test.info().outputPath("bot-settings-open.png"),
       scale: "css",
     });
-    await replyWindow
-      .getByRole("button", { name: "Bot 设置", exact: true })
-      .click();
     const preferences = replyWindow.getByRole("complementary", {
       name: "Bot 设置",
     });
@@ -561,9 +558,6 @@ test("real desktop + Pi: create, stream, resume, react, persist drafts and reope
       replyWindow.getByLabel("已授权目录", { exact: true }),
     ).toContainText(granted);
     await replyWindow.locator(".conversation-title").click();
-    await replyWindow
-      .getByRole("button", { name: "Bot 设置", exact: true })
-      .click();
     await expect(replyWindow.getByLabel("标签（可选）")).toHaveValue(
       "真实工具验收",
     );

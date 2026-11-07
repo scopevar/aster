@@ -71,7 +71,6 @@ test("GIF and BMP avatar sources decode in Electron, normalize to WebP and survi
       0,
     );
     await page.locator(".conversation-title").click();
-    await page.getByRole("button", { name: "Bot 设置", exact: true }).click();
     await page
       .getByRole("button", { name: "编辑 Bot 头像", exact: true })
       .click();
