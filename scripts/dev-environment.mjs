@@ -1,28 +1,8 @@
-import { constants } from "node:fs";
-import { access, readFile } from "node:fs/promises";
+import { access } from "node:fs/promises";
 import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import { inspectLinuxLibraries } from "./dev-libraries.mjs";
-import { runNode } from "./dev-process.mjs";
-
-async function electronExecutable(directory) {
-  try {
-    const relative = (
-      await readFile(join(directory, "path.txt"), "utf8")
-    ).trim();
-    const binary = join(
-      process.env.ELECTRON_OVERRIDE_DIST_PATH || join(directory, "dist"),
-      relative,
-    );
-    await access(
-      binary,
-      process.platform === "win32" ? constants.F_OK : constants.X_OK,
-    );
-    return binary;
-  } catch {
-    return undefined;
-  }
-}
+import { prepareElectron } from "./prepare-electron.mjs";
 
 /**
  * Report only failed startup requirements; a healthy environment prints nothing.
@@ -70,29 +50,20 @@ export async function inspectDevEnvironment(
     );
   }
   const require = createRequire(join(root, "package.json"));
-  let electronDirectory;
+  let dependenciesReady = false;
   try {
     for (const dependency of ["esbuild", "sharp", "electron", "electron-vite"])
       require.resolve(dependency);
-    electronDirectory = dirname(require.resolve("electron"));
+    dependenciesReady = true;
     report("项目依赖", true, "已安装", "");
   } catch {
     report("项目依赖", false, "缺少依赖", "执行 pnpm install，然后 pnpm dev。");
   }
-  if (electronDirectory) {
-    let binary = await electronExecutable(electronDirectory);
-    if (!binary && installElectron && failures.length === 0) {
-      console.info(
-        "Aster：缺少 Electron 程序，正在自动下载安装，首次下载可能需要几分钟。",
-      );
-      const code = await runNode(
-        root,
-        [join(electronDirectory, "install.js")],
-        signal,
-      );
-      if (code === 0) binary = await electronExecutable(electronDirectory);
-      else console.error(`Electron 自动安装失败，退出码：${code}。`);
-    }
+  if (dependenciesReady) {
+    const binary = await prepareElectron(root, {
+      install: installElectron && failures.length === 0,
+      signal,
+    });
     if (binary) {
       report("Electron 程序", true, "存在且可执行", "");
     } else {

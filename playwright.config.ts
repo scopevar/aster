@@ -6,8 +6,18 @@ export default defineConfig({
   use: { trace: "retain-on-failure" },
   outputDir: ".runtime/test-results/playwright",
   projects: [
+    {
+      name: "desktop-setup",
+      testDir: "./tests/setup",
+      testMatch: "electron.setup.ts",
+    },
     // Real Electron, worker and daemon share OS resources, so they run one at a time.
-    { name: "desktop", testDir: "./tests/e2e", workers: 1 },
+    {
+      name: "desktop",
+      testDir: "./tests/e2e",
+      workers: 1,
+      dependencies: ["desktop-setup"],
+    },
     // Built renderer behind a fake bridge; isolated pages run in parallel, capped
     // so in-process workers and screenshots do not starve each other.
     {

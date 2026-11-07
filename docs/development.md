@@ -49,6 +49,8 @@ pnpm daemon --data-dir <数据根目录> stop
 - `pnpm check`：类型、静态检查和核心测试；不包含环境测试或 Electron E2E。
 - UI、系统能力及环境相关验证按 [AGENTS.md](../AGENTS.md#检查) 和[测试规则](../tests/AGENTS.md)选择。
 
+开发启动、核心测试和 Playwright 的 `desktop` 项目会在运行前自动准备缺失的 Electron 程序，已有程序直接复用；下载失败时停止，不进入启动或测试。独立 Renderer 测试不触发安装，`pnpm dev --doctor` 仍然只读。直接运行依赖 Electron 的单个 Node 测试前，可执行 `node scripts/prepare-electron.mjs`。
+
 脚本环境需要 Windows WHP 或 Linux glibc/KVM，安装依赖时保留 optional dependencies。验证真实 VM 前先构建，再在具备虚拟化能力的宿主执行：
 
 ```powershell

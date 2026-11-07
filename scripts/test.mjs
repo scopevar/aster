@@ -3,6 +3,7 @@ import { readdir } from "node:fs/promises";
 import { availableParallelism } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runNode } from "./dev-process.mjs";
 
 const environmentGroups = {
   media: new Set(["documents.test.ts", "video.test.ts"]),
@@ -44,6 +45,15 @@ switch (group) {
     break;
   default:
     throw new Error(`Unknown test group: ${group}`);
+}
+
+// Core includes real diagnostic/credential entry tests that need Electron.
+// Prepare once before workers start; guard and environment-only groups stay independent.
+if (group === "core" || group === "all") {
+  const code = await runNode(process.cwd(), [
+    fileURLToPath(new URL("./prepare-electron.mjs", import.meta.url)),
+  ]);
+  if (code !== 0) process.exit(code);
 }
 
 const child = spawn(

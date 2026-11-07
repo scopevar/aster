@@ -16,8 +16,8 @@ import {
   stopWorker,
 } from "../../src/desktop/worker/worker-maintenance.js";
 
-const executable: unknown = createRequire(import.meta.url)("electron");
 function electronPath() {
+  const executable: unknown = createRequire(import.meta.url)("electron");
   if (typeof executable !== "string")
     throw new Error("Electron path unavailable");
   return executable;

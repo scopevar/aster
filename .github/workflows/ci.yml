@@ -30,7 +30,7 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
       - name: Install Electron for real entry tests
-        run: node node_modules/electron/install.js
+        run: node scripts/prepare-electron.mjs
       - name: Resolve Windows temporary directory aliases
         if: runner.os == 'Windows'
         run: |
