@@ -1,10 +1,6 @@
 name: Build and release
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   schedule:
     # Daily at 08:00 Asia/Shanghai (00:00 UTC).
     - cron: "0 0 * * *"
@@ -31,7 +27,7 @@ defaults:
 
 # Never cancel a run that may already be publishing immutable artifacts.
 concurrency:
-  group: aster-release-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+  group: aster-release-main
   cancel-in-progress: false
 
 jobs:
@@ -70,7 +66,7 @@ jobs:
 
   build:
     needs: plan
-    if: github.event_name != 'push' && needs.plan.outputs.source != ''
+    if: needs.plan.outputs.source != ''
     strategy:
       fail-fast: false
       matrix:
@@ -121,6 +117,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+      pull-requests: write
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -128,10 +125,31 @@ jobs:
           ref: ${{ github.ref_name }}
           fetch-depth: 0
       - uses: ./.github/actions/setup
-      - name: Record latest stable version on the release branch
+      - name: Prepare latest stable version record
+        id: version
         env:
-          ASTER_RELEASE_BRANCH: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: pnpm release --ci sync-version
+      - name: Open a version record pull request
+        if: steps.version.outputs.version != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
+          branch="release/version-$VERSION"
+          existing=$(gh pr list --repo "$GITHUB_REPOSITORY" --base main --head "$branch" --state open --json url --jq '.[0].url // empty')
+          if [[ -n "$existing" ]]; then
+            echo "Version record PR already exists: $existing"
+            exit 0
+          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          pnpm release --ci sync-version
+          if ! git ls-remote --exit-code --heads origin "$branch"; then
+            git switch -c "$branch"
+            git add -- package.json
+            git commit -m "chore(release): 同步正式版本 $VERSION" -- package.json
+            git push origin "HEAD:refs/heads/$branch"
+          fi
+          gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$branch" \
+            --title "chore(release): 同步正式版本 $VERSION" \
+            --body "记录已发布的 Stable $VERSION，不重新发布版本。请检查版本差异、批准机器人 PR 的 CI 运行，并在检查通过和验收后 Squash 合并。"

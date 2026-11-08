@@ -92,22 +92,11 @@ export async function tagCiRelease(
   await git(root, ["tag", "-a", tag, record.sourceCommit, "-m", message]);
 }
 
-/** Sync the current release branch without grafting a version commit onto the candidate. */
-export async function syncStableVersion(
-  root: string,
-  branch: "main" | "dev" = "main",
-) {
+/** Prepare a version record for a PR; publishing never pushes a protected branch. */
+export async function syncStableVersion(root: string) {
   const { stable } = await releaseHistory(root);
   const current = (await readPackage(root)).data.version;
   if (compareReleaseVersions(current, stable) >= 0) return;
   await writeVersion(root, stable);
-  await git(root, ["add", "--", "package.json"]);
-  await git(root, [
-    "commit",
-    "-m",
-    `chore(release): 同步正式版本 ${stable}`,
-    "--",
-    "package.json",
-  ]);
-  await git(root, ["push", "origin", `HEAD:refs/heads/${branch}`]);
+  return stable;
 }

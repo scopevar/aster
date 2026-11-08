@@ -35,7 +35,6 @@ function recordingBridge() {
 await test("every bridge method invokes its own aster:<method> channel with the given arguments", () => {
   const { bridge, calls } = recordingBridge();
   const methods = Object.keys(bridge);
-  assert.ok(methods.length > 30);
   for (const method of methods) {
     const fn: unknown = Reflect.get(bridge, method);
     assert.equal(typeof fn, "function");

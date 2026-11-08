@@ -16,7 +16,24 @@ const environmentTests = new Set(
   Object.values(environmentGroups).flatMap((files) => [...files]),
 );
 const buildFreeTests = new Set(["guards.test.ts"]);
+// These modules need no build artifacts, database, network server or real process.
+// Unclassified tests stay in integration so new coverage is never silently omitted.
+const unitTests = new Set([
+  "command-queue.test.ts",
+  "desktop-agent-connections.test.ts",
+  "ipc-contracts.test.ts",
+  "message-markdown.test.ts",
+  "packaged-startup.test.ts",
+  "provider-presets.test.ts",
+  "stream-buffer.test.ts",
+  "template-edit-cache.test.ts",
+  "web-policy.test.ts",
+  "worker-dispatch.test.ts",
+]);
 const group = process.argv[2] ?? "core";
+const option = process.argv[3];
+if (process.argv.length > 4 || (option && option !== "--list"))
+  throw new Error("Usage: node scripts/test.mjs <group> [--list]");
 const entries = await readdir("tests", { withFileTypes: true });
 const allTests = entries
   .filter((entry) => entry.isFile() && entry.name.endsWith(".test.ts"))
@@ -25,9 +42,16 @@ const allTests = entries
 
 let selected;
 switch (group) {
+  case "unit":
+    selected = allTests.filter((file) => unitTests.has(file));
+    break;
+  case "integration":
   case "core":
     selected = allTests.filter(
-      (file) => !environmentTests.has(file) && !buildFreeTests.has(file),
+      (file) =>
+        !environmentTests.has(file) &&
+        !buildFreeTests.has(file) &&
+        (group === "core" || !unitTests.has(file)),
     );
     break;
   case "guards":
@@ -47,9 +71,17 @@ switch (group) {
     throw new Error(`Unknown test group: ${group}`);
 }
 
-// Core includes real diagnostic/credential entry tests that need Electron.
+// An empty --test file list would let Node discover unrelated suites.
+if (selected.length === 0)
+  throw new Error(`No tests found for group: ${group}`);
+if (option === "--list") {
+  console.log(selected.map((file) => join("tests", file)).join("\n"));
+  process.exit(0);
+}
+
+// Integration includes real diagnostic/credential entry tests that need Electron.
 // Prepare once before workers start; guard and environment-only groups stay independent.
-if (group === "core" || group === "all") {
+if (group === "integration" || group === "core" || group === "all") {
   const code = await runNode(process.cwd(), [
     fileURLToPath(new URL("./prepare-electron.mjs", import.meta.url)),
   ]);
