@@ -14,8 +14,10 @@
 在 [Releases](https://github.com/scopevar/aster/releases) 查看 Windows 安装包、Linux AppImage 和 deb。安装包自带所需运行时。Linux 需要系统密钥环与 `secret-tool`，请在普通用户图形会话中运行。源码运行见[开发说明](docs/development.md)。
 
 1. 打开 **应用菜单 → 设置 → 模型与连接**，添加模型供应商。
-2. 填写 API Key，或连接本地 OpenAI 兼容服务，检查并保存配置。
+2. 填写 API Key、使用 OpenAI 的 **ChatGPT 订阅登录**，或连接本地 OpenAI 兼容服务，检查并保存配置。
 3. 创建 Bot，选择供应商，开始聊天。
+
+ChatGPT 订阅登录会打开系统浏览器，由你授权 Aster 使用套餐中的可用额度；凭据加密保存在本机，与同一 OpenAI 提供商共用，登录成功会替换已保存的 API Key。订阅模式固定使用官方接口，不能设置自定义 Base URL。登录后可从模型 ID 输入框的建议中选择账号可用模型，并执行“真实推理测试”。退出登录只移除本机凭据；撤销应用授权可前往 ChatGPT 的连接管理设置。登录回调使用本机端口 1455，其他登录占用该端口时请先结束，再重试。
 
 关闭窗口后，后台任务仍会继续运行；需要停止时，从托盘选择 **停止 daemon 并关闭**。
 

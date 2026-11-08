@@ -48,7 +48,9 @@ export const agentConnectionSchema = z
         "google-generative-ai",
       ])
       .default("native"),
-    auth: z.enum(["environment", "stored", "none"]).default("environment"),
+    auth: z
+      .enum(["environment", "stored", "chatgpt", "none"])
+      .default("environment"),
     apiKeyEnv: z
       .string()
       .max(100)
@@ -62,6 +64,14 @@ export const agentConnectionSchema = z
   })
   .strict()
   .superRefine((entry, ctx) => {
+    if (
+      entry.auth === "chatgpt" &&
+      (entry.provider !== "openai" || entry.api !== "native" || entry.baseUrl)
+    )
+      ctx.addIssue({
+        code: "custom",
+        message: "ChatGPT 订阅仅支持 OpenAI 原生提供商，请清空 Base URL。",
+      });
     if (entry.auth === "environment" && !entry.apiKeyEnv)
       ctx.addIssue({ code: "custom", message: "请选择后端密钥环境变量。" });
     if (entry.api !== "native" && !entry.baseUrl)

@@ -6,6 +6,34 @@ import { tmpdir } from "node:os";
 import { PiCredentials } from "../src/agent/pi-credentials.js";
 import { ownDirectory } from "../src/platform/directory-lease.js";
 
+await test("cancelled credential changes never replace the saved account", async () => {
+  const home = await mkdtemp(join(tmpdir(), "aster-pi-auth-cancel-"));
+  try {
+    const credentials = new PiCredentials(home);
+    await credentials.modify("openai", async () => ({
+      type: "api_key",
+      key: "original-key",
+    }));
+    const controller = new AbortController();
+    await assert.rejects(
+      credentials.modify(
+        "openai",
+        async () => {
+          controller.abort();
+          return { type: "api_key", key: "cancelled-key" };
+        },
+        { signal: controller.signal },
+      ),
+      { name: "AbortError" },
+    );
+    const saved = await credentials.read("openai");
+    assert.ok(saved?.type === "api_key");
+    assert.equal(saved.key, "original-key");
+  } finally {
+    await rm(home, { recursive: true, force: true });
+  }
+});
+
 await test("Pi credentials use encrypted storage, serialized mutations and secret-free metadata", async () => {
   const home = await mkdtemp(join(tmpdir(), "aster-pi-auth-"));
   try {

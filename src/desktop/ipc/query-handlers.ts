@@ -47,6 +47,10 @@ import {
   sandboxSettingsStatusSchema,
 } from "../../shared/tools/sandbox-settings.js";
 import { parseInput } from "./ipc-result.js";
+import { shell } from "electron";
+import { chatGPTAuthRequestSchema } from "../../shared/chatgpt-auth.js";
+import { requestChatGPTAuth } from "./chatgpt-auth.js";
+import { AppError } from "../../shared/core.js";
 export function registerQueryHandlers(
   ctx: Pick<
     DesktopHandlerContext,
@@ -54,6 +58,42 @@ export function registerQueryHandlers(
   >,
 ) {
   const { handle, worker, workerCall, workerFeed } = ctx;
+  let releaseLogin: (() => void) | undefined;
+  handle("chatGPTAuth", async (input) => {
+    if (ctx.draining) throw new AppError("unavailable", "界面正在退出。");
+    const request = parseInput(chatGPTAuthRequestSchema, input);
+    if (request.action === "start") {
+      const owner = ctx.window;
+      if (!owner || owner.isDestroyed())
+        throw new AppError("unavailable", "窗口不可用。");
+      releaseLogin?.();
+      const cancel = () => {
+        void worker
+          .call(workerRoutes.chatGPTAuth, { action: "cancel", id: request.id })
+          .catch(() => {});
+      };
+      owner.once("closed", cancel);
+      releaseLogin = () => owner.removeListener("closed", cancel);
+    }
+    try {
+      const result = await requestChatGPTAuth(worker, request, async (url) => {
+        if (ctx.draining || !ctx.window || ctx.window.isDestroyed())
+          throw Error("Window closed");
+        await shell.openExternal(url);
+      });
+      if (result.state !== "pending") {
+        releaseLogin?.();
+        releaseLogin = undefined;
+      }
+      return result;
+    } catch (error) {
+      if (request.action === "start") {
+        releaseLogin?.();
+        releaseLogin = undefined;
+      }
+      throw error;
+    }
+  });
   handle("sandboxSettings", async (input) =>
     sandboxSettingsStatusSchema.parse(
       await workerCall(

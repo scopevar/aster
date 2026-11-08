@@ -18,6 +18,8 @@ import { JevConnection } from "./jev.js";
 import { jevConfigSchema } from "../shared/chat/group-host.js";
 import { HostJudge } from "../chat/group-judge.js";
 import type { StructuredModel } from "../shared/memory.js";
+import { ChatGPTAuth } from "./chatgpt-auth.js";
+import type { ChatGPTAuthRequest } from "../shared/chatgpt-auth.js";
 
 /** Device-local non-secret settings. No global agent configuration is read or rewritten. */
 export class AgentConnections {
@@ -25,6 +27,7 @@ export class AgentConnections {
   private readonly path: string;
   private readonly credentials: PiCredentials;
   private readonly jev: JevConnection;
+  private readonly chatgpt: ChatGPTAuth;
   constructor(
     private readonly workspace: string,
     private readonly changed: () => void = () => {},
@@ -32,6 +35,21 @@ export class AgentConnections {
     this.path = modelConfigPath(workspace);
     this.credentials = new PiCredentials(workspace);
     this.jev = new JevConnection(workspace);
+    this.chatgpt = new ChatGPTAuth(workspace, this.credentials, changed);
+  }
+  async chatGPTAuth(request: ChatGPTAuthRequest, signal: AbortSignal) {
+    if (request.action === "status" || request.action === "cancel")
+      return this.chatgpt.request(request, signal);
+    if (this.busy) throw new AppError("conflict", "模型配置操作正在进行。");
+    this.busy = true;
+    try {
+      return await this.chatgpt.request(request, signal);
+    } finally {
+      this.busy = false;
+    }
+  }
+  close() {
+    return this.chatgpt.close();
   }
   async groupJudge(host: StructuredModel) {
     const config = jevConfigSchema.parse(
@@ -88,7 +106,8 @@ export class AgentConnections {
     const request = agentConnectionsRequestSchema.parse(value);
     signal.throwIfAborted();
     if (request.action === "status") return this.response();
-    if (this.busy) throw new AppError("conflict", "模型配置操作正在进行。");
+    if (this.busy || this.chatgpt.active)
+      throw new AppError("conflict", "模型配置或 ChatGPT 登录正在进行。");
     this.busy = true;
     try {
       if (request.action === "jev.test") {

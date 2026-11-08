@@ -13,6 +13,7 @@ import type {
   AgentConnectionsRequest,
   AgentConnectionsStatus,
 } from "./agent-connections.js";
+import type { ChatGPTAuthRequest, ChatGPTAuthStatus } from "./chatgpt-auth.js";
 import type { CommandResult, Failure } from "./core.js";
 import type { Query, SnapshotUpdate } from "./snapshot.js";
 import type {
@@ -77,6 +78,7 @@ export type Result<T> =
  * 每个方法对应一个 `aster:<方法名>` channel，preload 与 main 都从这里推导，不再各写一份字符串。
  */
 export interface DesktopApi {
+  chatGPTAuth(request: ChatGPTAuthRequest): Promise<ChatGPTAuthStatus>;
   sandboxSettings(
     request: SandboxSettingsRequest,
   ): Promise<SandboxSettingsStatus>;
@@ -162,6 +164,7 @@ export function createDesktopBridge(
     (...args: DesktopArgs<K>) =>
       invoke<Result<DesktopData<K>>>(desktopChannel(method), ...args);
   return {
+    chatGPTAuth: bind("chatGPTAuth"),
     sandboxSettings: bind("sandboxSettings"),
     localWorkspace: bind("localWorkspace"),
     templateFile: bind("templateFile"),

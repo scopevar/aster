@@ -144,7 +144,8 @@ export class PiCredentials implements CredentialStore {
     }
     return this.metadata.entries.map((entry) => ({ ...entry }));
   }
-  private async write(data: Data) {
+  private async write(data: Data, signal?: AbortSignal) {
+    signal?.throwIfAborted();
     const plain = Buffer.from(JSON.stringify(schema.parse(data)));
     if (plain.byteLength > 1024 * 1024 - 1024)
       throw Error("Credential storage exceeded its limit");
@@ -161,6 +162,7 @@ export class PiCredentials implements CredentialStore {
       } finally {
         await file.close();
       }
+      signal?.throwIfAborted();
       await rename(temp, this.path);
     } finally {
       await unlink(temp).catch((error: unknown) => {
@@ -189,7 +191,7 @@ export class PiCredentials implements CredentialStore {
           generation: randomUUID(),
           credential: credentialSchema.parse(next),
         };
-        await this.write(data);
+        await this.write(data, options?.signal);
       }
       return data.entries[providerId]?.credential;
     });

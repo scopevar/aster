@@ -46,6 +46,7 @@ export function createDesktopClient(bridge: () => DesktopBridge): DesktopApi {
     async (...args: DesktopArgs<K>): Promise<DesktopData<K>> =>
       unwrap(await bridge()[method](...args));
   return {
+    chatGPTAuth: call("chatGPTAuth"),
     sandboxSettings: call("sandboxSettings"),
     localWorkspace: call("localWorkspace"),
     templateFile: call("templateFile"),
