@@ -8,7 +8,8 @@
 
 - 启用 GitHub Actions。Nightly 和 Stable 发布要求仓库公开，私有仓库可运行 Preview。
 - 配置 `production` environment，允许从 `main` 部署。
-- 分支和标签规则需允许发布任务创建版本标签、同步版本号。工作流使用 GitHub 自动提供的 `GITHUB_TOKEN`，无需另配发布密钥。
+- 标签规则需允许发布任务创建版本标签。Stable 的版本号同步通过 PR，不要求发布任务绕过 `main` 保护。
+- 在 Actions 的 Workflow permissions 中允许 GitHub Actions 创建 PR。工作流使用 GitHub 自动提供的 `GITHUB_TOKEN`，无需另配发布密钥；机器人创建的 PR 可能显示 **Approve workflows to run**，需有写权限的人批准 CI 运行，再按正常检查与验收流程合并。
 
 ## 如何发布
 
@@ -18,7 +19,9 @@
 - **nightly**：发布预览版本。版本号自动取最新正式版本的下一个补丁号，加日期和运行编号。
 - **stable**：发布正式版本。`nightly_version` 填当前仓库中已安装、测试过的完整 Nightly 版本号；`version` 留空使用其基础版本，也可填写更高的正式 `X.Y.Z`，最终版本须高于已发布的正式版本。
 
-Stable 使用所选 Nightly 的源码重新构建并检查，通过后发布并同步 `main` 的版本号。推送 `main` 只运行检查；PR 会额外打包。
+Stable 使用所选 Nightly 的源码重新构建并检查，通过后发布并创建版本号同步 PR。`sync-version` 只准备 `package.json` 差异，不提交或推送 `main`；工作流将差异推到 `release/version-<版本>` 并创建 PR。重复运行复用已有未关闭 PR，未生成差异时跳过。版本 PR 通过检查并验收后 Squash 合并，发布已经完成，不因版本 PR 未合并而重新发布同一版本。
+
+普通 PR 仅由独立的 **PR checks** 检查双平台完整入口与桌面 smoke，不默认打包；合并或普通推送 `main` 不触发新的检查或发布。需要安装验证时手动运行 `preview`。定时 Nightly 与手动发布仍检查实际发布源码，这些发布检查不属于合并后的重复 PR CI。
 
 Nightly 每天北京时间 08:00（UTC 00:00）自动检查 `main`，GitHub Actions 调度可能延迟。首次运行会发布；之后仅在相较上次 Nightly 有应用或构建相关改动时发布，纯文档和测试改动会跳过，后续检查和打包任务也不运行。手动选择 `nightly` 不受改动检查限制，可随时构建发布。
 
@@ -34,6 +37,6 @@ Nightly 每天北京时间 08:00（UTC 00:00）自动检查 `main`，GitHub Acti
 
 - 检查或构建失败：修复问题后重跑；源码有改动时发起新的运行。
 - 上传或公开 Release 失败：在原运行选择 **Re-run failed jobs**，复用已有产物与草稿，不重新构建同一版本。
-- Stable 已发布但 `sync_version` 失败：只重跑版本同步任务。
+- Stable 已发布但 `sync_version` 失败：只重跑版本同步任务，不重发版本。若版本分支已存在但 PR 未创建，重试会复用分支创建 PR；若该分支被人工修改，先检查差异，不覆盖或强推。机器人 PR 等待 CI 运行批准时，在 PR 页批准后继续。
 
 Artifacts 保留 7 天，过期后无法按原运行续传。保留已公开的版本标签和附件，不覆盖或删除后重新发布同一版本。

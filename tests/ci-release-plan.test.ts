@@ -162,7 +162,7 @@ void test("CI isolates preview, skips unchanged Nightlies and promotes exact tes
       /高于/,
     );
     await assert.rejects(readNightly(root, "0.0.1"), /Nightly/);
-    // A dev sync must preserve newer commits and leave main untouched.
+    // Version recording prepares a PR diff without committing or pushing main.
     const remote = join(root, "remote.git");
     await git(root, ["init", "--bare", remote]);
     await writeFile(join(root, ".gitignore"), "remote.git/\n");
@@ -170,13 +170,17 @@ void test("CI isolates preview, skips unchanged Nightlies and promotes exact tes
     await git(root, ["remote", "add", "origin", remote]);
     await git(root, ["push", "origin", "main"]);
     const main = await git(root, ["rev-parse", "HEAD"]);
-    await git(root, ["checkout", "-b", "dev"]);
-    await git(root, ["push", "origin", "dev"]);
-    await syncStableVersion(root, "dev");
+    const recordedVersion = await syncStableVersion(root);
     assert.equal((await readPackage(root)).data.version, "0.0.2");
-    assert.equal(await git(root, ["rev-parse", "HEAD^"]), main);
+    assert.equal(await git(root, ["rev-parse", "HEAD"]), main);
     assert.equal(await git(root, ["rev-parse", "origin/main"]), main);
-    await syncStableVersion(root, "dev");
+    assert.equal(
+      await git(root, ["ls-remote", "origin", "refs/heads/main"]),
+      `${main}\trefs/heads/main`,
+    );
+    assert.match(await git(root, ["diff", "--", "package.json"]), /0\.0\.2/);
+    assert.equal(recordedVersion, "0.0.2");
+    assert.equal(await syncStableVersion(root), undefined);
     await writeFile(join(root, "guide.md"), "uncommitted");
     await assert.rejects(createCiPlan(root, env, "preview"), /干净/);
   } finally {

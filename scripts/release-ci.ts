@@ -21,10 +21,9 @@ export async function runCiRelease(root: string, args: string[]) {
   const planPath = join(root, ".runtime", "ci-release-plan.json");
   if (command === "sync-version" && rest.length === 0) {
     await requireCleanTree(root);
-    await syncStableVersion(
-      root,
-      z.enum(["main", "dev"]).parse(process.env.ASTER_RELEASE_BRANCH),
-    );
+    const version = await syncStableVersion(root);
+    if (process.env.GITHUB_OUTPUT)
+      await appendFile(process.env.GITHUB_OUTPUT, `version=${version ?? ""}\n`);
     return;
   }
   if (command === "plan") {
