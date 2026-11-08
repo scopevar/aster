@@ -88,6 +88,27 @@ export async function configuredModel(
           },
         ],
       });
+    if (entry.provider === "openai" && credential?.type === "oauth") {
+      const provider = runtime.getProvider("openai");
+      if (!provider)
+        throw new AppError("unavailable", "未找到 OpenAI 提供商。");
+      // Subscription requests require tools in additional_tools input items.
+      // Apply to both bundled and account-only models, retaining native auth.
+      const models = runtime.getModels("openai").map((model) => ({
+        ...model,
+        compat: {
+          ...model.compat,
+          supportsMidConvoSystemMessages: true,
+          supportsAdditionalTools: true,
+          supportsToolSearch: false,
+        },
+      }));
+      runtime.registerNativeProvider({
+        ...provider,
+        getModels: () => models,
+        getAllModels: () => models,
+      });
+    }
     if (entry.auth === "environment" || apiKey !== undefined) {
       const key = apiKey ?? process.env[entry.apiKeyEnv];
       if (!key)

@@ -66,6 +66,11 @@ export class ChatGPTAuth {
         (entry) => entry.providerId === "openai",
       )?.type ?? "none";
     const authenticated = credentialType === "oauth";
+    if (this.state === "connected" && !authenticated) {
+      this.state = "idle";
+      this.message = "";
+      this.models = [];
+    }
     return {
       state: this.state === "idle" && authenticated ? "connected" : this.state,
       authenticated,
@@ -176,7 +181,8 @@ export class ChatGPTAuth {
         },
         { getDeviceId: () => deviceId, agentName: "Aster" },
       );
-      this.message = "已连接 ChatGPT 订阅。";
+      let message = "已连接 ChatGPT 订阅。";
+      let models: ChatGPTAuthReply["models"] = [];
       try {
         const auth = await runtime.getAuth("openai", { signal });
         const response = await fetch("https://api.openai.com/v1/models", {
@@ -184,12 +190,12 @@ export class ChatGPTAuth {
           signal: AbortSignal.any([signal, AbortSignal.timeout(15000)]),
         });
         if (!response.ok) throw Error("Model catalog unavailable");
-        this.models = catalogSchema
+        models = catalogSchema
           .parse(await response.json())
           .models.filter((model) => model.visibility === "list")
           .map((model) => ({ id: model.slug, name: model.display_name }));
       } catch {
-        this.message =
+        message =
           "已连接 ChatGPT 订阅，模型列表暂不可用，可填写模型 ID 后测试。";
       }
       signal.throwIfAborted();
@@ -203,6 +209,8 @@ export class ChatGPTAuth {
       );
       this.changed();
       this.state = "connected";
+      this.message = message;
+      this.models = models;
     } catch (error) {
       this.state = attempt.controller.signal.aborted ? "idle" : "error";
       this.message = attempt.controller.signal.aborted

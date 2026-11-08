@@ -6,6 +6,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { setTimeout } from "node:timers/promises";
 import { z } from "zod";
+import { Type } from "typebox";
+import { AgentConnections } from "../src/agent/connections.js";
 import { startWorker } from "../src/worker/server.js";
 import { WorkerConnection } from "../src/desktop/worker/worker-connection.js";
 import { requestChatGPTAuth } from "../src/desktop/ipc/chatgpt-auth.js";
@@ -26,6 +28,9 @@ await test("ChatGPT login preserves credentials on cancellation, seals successfu
   const realFetch = globalThis.fetch;
   let tokenRequests = 0;
   let inferenceRequests = 0;
+  let expectedModel = "account-model";
+  let withTools = false;
+  let catalogFails = false;
   let deny = false;
   t.mock.method(
     globalThis,
@@ -50,6 +55,7 @@ await test("ChatGPT login preserves credentials on cancellation, seals successfu
           new Headers(init?.headers).get("Authorization"),
           "Bearer subscription-access-fixture",
         );
+        if (catalogFails) return new Response("Unavailable", { status: 503 });
         return Response.json({
           models: [
             {
@@ -81,9 +87,73 @@ await test("ChatGPT login preserves credentials on cancellation, seals successfu
           })
           .passthrough()
           .parse(payload);
-        assert.equal(request.model, "account-model");
+        assert.equal(request.model, expectedModel);
         assert.ok(!("max_output_tokens" in request));
         assert.ok(!("temperature" in request));
+        const declarations = request.input.map((item) =>
+          z
+            .object({
+              type: z.literal("additional_tools"),
+              tools: z.array(z.object({ name: z.string() })),
+            })
+            .safeParse(item),
+        );
+        const hasResult = request.input.some(
+          (item) =>
+            z
+              .object({
+                type: z.literal("function_call_output"),
+                output: z.string(),
+              })
+              .safeParse(item).success,
+        );
+        if (withTools) {
+          assert.ok(
+            declarations.some(
+              (item) =>
+                item.success &&
+                item.data.tools.some((tool) => tool.name === "read"),
+            ),
+            "subscription tools must be declared in additional_tools",
+          );
+          assert.ok(
+            !("tools" in request),
+            "subscription requests must not send flat top-level function tools",
+          );
+          if (!hasResult) {
+            const call = {
+              id: "fc_fixture",
+              call_id: "call_fixture",
+              type: "function_call",
+              name: "read",
+              arguments: "{}",
+              status: "completed",
+            };
+            return new Response(
+              [
+                {
+                  type: "response.output_item.done",
+                  output_index: 0,
+                  item: call,
+                },
+                {
+                  type: "response.completed",
+                  response: {
+                    id: "response-tool",
+                    status: "completed",
+                    output: [call],
+                  },
+                },
+              ]
+                .map((event) => `data: ${JSON.stringify(event)}\n\n`)
+                .join(""),
+              { headers: { "Content-Type": "text/event-stream" } },
+            );
+          }
+          assert.ok(
+            JSON.stringify(request.input).includes("tool-result-fixture"),
+          );
+        }
         const item = {
           id: "message-fixture",
           type: "message",
@@ -239,6 +309,67 @@ await test("ChatGPT login preserves credentials on cancellation, seals successfu
     } finally {
       await configured.release();
     }
+    withTools = true;
+    for (const model of ["gpt-5.4", "account-model"]) {
+      expectedModel = model;
+      const selected = await configuredModel(
+        join(directory, "agent"),
+        { ...entry, model },
+        AbortSignal.timeout(10000),
+      );
+      try {
+        const user = {
+          role: "user" as const,
+          content: "Read a resource",
+          timestamp: Date.now(),
+        };
+        const tools = [
+          {
+            name: "read",
+            description: "Read a fixture resource",
+            parameters: Type.Object({}),
+          },
+        ];
+        const reply = await selected.runtime.complete(
+          selected.model,
+          { systemPrompt: "Use the read tool.", messages: [user], tools },
+          { signal: AbortSignal.timeout(10000) },
+        );
+        assert.equal(reply.stopReason, "toolUse", reply.errorMessage);
+        const call = reply.content.find((part) => part.type === "toolCall");
+        assert.ok(call?.type === "toolCall");
+        const result = await selected.runtime.complete(
+          selected.model,
+          {
+            systemPrompt: "Use the read tool.",
+            tools,
+            messages: [
+              user,
+              reply,
+              {
+                role: "toolResult",
+                toolCallId: call.id,
+                toolName: call.name,
+                content: [{ type: "text", text: "tool-result-fixture" }],
+                isError: false,
+                timestamp: Date.now(),
+              },
+            ],
+          },
+          { signal: AbortSignal.timeout(10000) },
+        );
+        assert.equal(result.stopReason, "stop");
+        assert.ok(
+          result.content.some(
+            (part) =>
+              part.type === "text" && part.text === "subscription response",
+          ),
+        );
+      } finally {
+        await selected.release();
+      }
+    }
+    assert.equal(inferenceRequests, 5);
     await assert.rejects(
       configuredModel(
         join(directory, "agent"),
@@ -247,6 +378,42 @@ await test("ChatGPT login preserves credentials on cancellation, seals successfu
       ),
       /官方 OpenAI/,
     );
+    catalogFails = true;
+    await start();
+    await callback();
+    const withoutCatalog = await settled();
+    assert.equal(withoutCatalog.authenticated, true);
+    assert.deepEqual(
+      withoutCatalog.models,
+      [],
+      "a new grant must not retain the previous account's models",
+    );
+    assert.match(withoutCatalog.message, /模型列表暂不可用/);
+    const settings = new AgentConnections(join(directory, "agent"));
+    try {
+      const before = settings.status();
+      const stored = { ...entry, auth: "stored" as const };
+      await settings.request(
+        {
+          action: "save",
+          revision: before.revision,
+          config: { defaultAgent: stored.id, connections: [stored] },
+          credential: { provider: "openai", key: "replacement-api-key" },
+        },
+        AbortSignal.timeout(10000),
+      );
+      const replaced = await status();
+      assert.equal(replaced.state, "idle");
+      assert.equal(replaced.authenticated, false);
+      assert.equal(replaced.credentialType, "api_key");
+      assert.ok(!replaced.message.includes("已连接"));
+    } finally {
+      await settings.close();
+    }
+    catalogFails = false;
+    await start();
+    await callback();
+    assert.equal((await settled()).authenticated, true);
     await server.stop();
     server = await startWorker(directory, { port: 0 });
     worker = new WorkerConnection(directory);
