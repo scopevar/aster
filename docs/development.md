@@ -46,10 +46,17 @@ pnpm daemon --data-dir <数据根目录> stop
 ## 构建与验证
 
 - `pnpm build`：构建应用。
-- `pnpm check`：类型、静态检查和核心测试；不包含环境测试或 Electron E2E。
-- UI、系统能力及环境相关验证按 [AGENTS.md](../AGENTS.md#检查) 和[测试规则](../tests/AGENTS.md)选择。
+- `pnpm test:unit`：无需构建的基础测试，不启动真实后台、数据库或 Electron。
+- `pnpm test:integration`：构建后运行普通 Node 集成测试，包含真实数据库、进程和系统能力。
+- `pnpm check:static`：类型、lint、格式、架构、文件规模和 AGENTS 检查，不构建或运行测试。
+- `pnpm check`：保留完整检查，依次运行静态检查、构建、基础与普通集成测试、守卫；不包含 Renderer、Electron E2E 或环境测试。
+- UI、系统能力及环境相关验证按 [AGENTS.md](../AGENTS.md#验证范围) 和[测试规则](../tests/AGENTS.md)选择。局部改动优先运行相关文件，公共基础、构建或影响无法确认时才做本地完整检查；当前 CI 仍执行完整检查。
 
-开发启动、核心测试和 Playwright 的 `desktop` 项目会在运行前自动准备缺失的 Electron 程序，已有程序直接复用；下载失败时停止，不进入启动或测试。独立 Renderer 测试不触发安装，`pnpm dev --doctor` 仍然只读。直接运行依赖 Electron 的单个 Node 测试前，可执行 `node scripts/prepare-electron.mjs`。
+用 `node scripts/test.mjs unit --list` 或 `node scripts/test.mjs integration --list` 查看实际文件清单；清单模式不安装 Electron 或执行测试。`core` 保留为两层的并集，`guards`、`media`、`sandbox`、`environment`、`all` 保持现有范围。基础层使用显式清单，新的普通测试默认进入集成层，避免漏跑。
+
+直接运行单个 Node 测试：`node --import tsx --test tests/<文件>.test.ts`；需要构建产物时先执行 `pnpm build`。Renderer 使用 `pnpm exec playwright test tests/renderer/<文件>.spec.ts --project=renderer`；真实桌面使用 `--project=desktop` 和对应 `tests/e2e/` 文件。不要因为已经运行聚焦测试，又默认追加整个分组。
+
+开发启动、普通集成／核心测试和 Playwright 的 `desktop` 项目会在运行前自动准备缺失的 Electron 程序，已有程序直接复用；下载失败时停止，不进入启动或测试。基础层、独立 Renderer 测试不触发安装，`pnpm dev --doctor` 仍然只读。直接运行依赖 Electron 的单个 Node 测试前，可执行 `node scripts/prepare-electron.mjs`。
 
 脚本环境需要 Windows WHP 或 Linux glibc/KVM，安装依赖时保留 optional dependencies。验证真实 VM 前先构建，再在具备虚拟化能力的宿主执行：
 

@@ -29,6 +29,11 @@ await test("a captured Pi run keeps its configuration while the next capture obs
     await assert.rejects(captured.check(), /ASTER_TEST_MISSING_PI_FIRST/);
     await assert.rejects(live.check(), /ASTER_TEST_MISSING_PI_SECOND/);
     assert.equal(live.requiresFreshSession("legacy-provider-thread"), true);
+    assert.equal(live.requiresFreshSession("aster-session:legacy"), true);
+    assert.equal(
+      live.requiresFreshSession("pi:v1:" + "a".repeat(64) + ":Zm9vLmpzb25s"),
+      false,
+    );
     assert.equal(live.requiresFreshSession(null), false);
   } finally {
     await rm(home, { recursive: true, force: true });

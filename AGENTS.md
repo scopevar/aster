@@ -34,7 +34,7 @@
 
 1. **准备**：检查工作区与已有 worktree，获取最新 `origin/main`。文件修改必须在任务独立的 worktree 和分支中进行；继续同一任务时复用自己的 worktree，只读分析无需新建。
 2. **实现与提交**：完成改动，按下文验证范围检查后提交。worktree、暂存区、构建输出和日志归创建它们的任务所有，不切换、提交、清理或覆盖其他任务的工作区，也不在共享主目录切换 `main` 来集成。
-3. **整合与验证**：提交验收前重新 fetch，在任务分支执行 `git rebase origin/main`，不为同步基线创建 merge commit；处理冲突并验证最终结果。业务意图不明确的冲突向用户确认；测试结果须对应供用户验收及实际推送的提交，不能用 rebase 前的通过结果代替组合验证。
+3. **整合与验证**：提交验收前重新 fetch，在任务分支执行 `git rebase origin/main`，不为同步基线创建 merge commit；处理冲突并按最终影响范围验证。业务意图不明确的冲突向用户确认；测试结果须对应供用户验收及实际推送的代码。核对整合前后的代码、依赖与环境，仅提交号变化时可复用已有结果并说明依据；发生实际变化时不得用旧结果代替组合验证。
 4. **报告与验收**：提供下文要求的测试报告和演示证据，等待用户明确同意合并。验收前保留任务分支、worktree 和演示证据，不得推送 `main`、合并 PR、同步主目录或提前清理现场；不得把测试通过、截图生成或用户未回复视为验收通过。
 5. **推送与核实**：用户验收通过后，执行 `git push origin HEAD:main`，只允许普通快进推送，并核实远端 `main` 包含本次提交。因远端前进被拒绝时，重新 fetch，在任务分支执行 `git rebase origin/main` 并验证；影响已验收内容时更新报告并重新验收。禁止 force push 或盲目重复推送。各任务自行交付，不设专门集成负责人，不强制 PR。
 6. **同步主目录**：仅当主目录已检出 `main`、工作区干净、无其他任务占用且可快进时，在主目录执行 `git merge --ff-only origin/main`；否则保留现场并说明原因。不直接改写其他 worktree 的分支引用。
@@ -85,19 +85,21 @@
 - Renderer 布局、交互和状态用例放在 `tests/renderer/`，使用 `tests/helpers/renderer-app.ts` 运行构建后的 Renderer 和真实 Store，按 IPC 契约替换 Main；依赖 Main、preload、IPC、窗口、系统能力、凭证、daemon 或重启的用例放在 `tests/e2e/`，运行真实 Electron。仅检查界面的完整应用用例应迁到 Renderer 层。
 - 视觉改动通过真实界面前后截图核对布局，并检查受影响的交互状态、主题和窗口尺寸；全局样式或公共组件改动须检查受影响的代表页面，不能只检查本次功能区域。核心测试通过不能替代视觉验收。
 - Node 聚焦测试：`node --import tsx --test tests/<文件>.test.ts`；依赖构建产物时先执行 `pnpm build`，分组与环境要求以 `scripts/test.mjs` 为准。
-- Renderer 聚焦测试：`pnpm exec playwright test tests/renderer/<文件>.spec.ts --project=renderer`，可并行；Electron E2E：`pnpm exec playwright test tests/e2e/<文件>.spec.ts --project=desktop`，串行；需电脑环境的用例选择 `computer` 项目并确认环境可用。
+- Renderer 聚焦测试：`pnpm exec playwright test tests/renderer/<文件>.spec.ts --project=renderer`，可并行；Electron E2E：`pnpm exec playwright test tests/e2e/<文件>.spec.ts --project=desktop`，串行。
 - 测试产物放在 `.runtime/test-results/`，E2E 截图和附件使用 `test.info().outputPath(...)`。不得为通过检查而删除有效断言、削弱类型或关闭安全控制。
 
 ## 验证范围
 
-开发阶段先运行直接相关的测试，按需执行类型、静态检查和构建。提交前按以下范围验证；涉及运行时代码、依赖、构建或架构时，最终整合后执行 `pnpm check`。没有新改动、失败或未解决疑点时，不重复扩大检查范围；用户或 CI 有额外要求时遵从。
+先按改动的真实影响选择验证范围，说明覆盖的行为和未覆盖项；提交或推送本身不触发全量检查。开发阶段运行聚焦测试，计划中的代码与测试修改收敛、基线整合完成后再做最终验证。没有代码、依赖、环境变化、失败或未解决疑点时复用已有结果；用户或 CI 有额外要求时遵从。
 
 - **纯文档或 AGENTS 文字调整**：修改文件的格式检查及 `pnpm check:agents`，无需业务或守卫测试。
 - **仅测试改动**：相关测试、`pnpm typecheck`、修改文件的 ESLint 和格式检查。
-- **运行时代码、依赖、构建或架构改动**：相关测试及 `pnpm check`；UI 另做相关 Renderer 用例或实际入口验证，Main、preload、IPC、窗口或 daemon 改动另做相关 Electron E2E。
+- **局部 UI 或单个业务模块**：`pnpm typecheck`、修改文件的 ESLint 和格式检查，以及该模块和直接调用方的相关测试；UI 另做相关 Renderer 用例或实际入口验证。简单文案、样式不机械新增测试；复用有效用例并核对实际界面。
+- **Main、preload、IPC、窗口、daemon、存储或安全边界**：类型、修改文件静态检查、相关集成测试与必要的 Electron E2E；依据受影响契约选择用例，不因目录名称自动运行全部测试。
+- **公共基础模块、依赖、构建、跨模块重构或影响范围无法确认**：最终执行 `pnpm check`，再补充相关 Renderer、Electron 或环境测试。测试分组与执行入口变更也须完整检查，确认原有覆盖没有遗漏。
 - **守卫脚本、baseline 或守卫执行规则改动**：对应守卫、`pnpm test:guards` 和 `pnpm check:agents`。
 
-`pnpm typecheck` 覆盖后台与 Renderer 两份配置，不以单文件编译代替。`pnpm check` 已包含类型、lint、全仓库格式、导入环、文件规模、AGENTS 检查，以及构建、核心和守卫测试，无需重复追加；环境测试和 E2E 须按改动另选。
+`pnpm typecheck` 覆盖后台与 Renderer 两份配置，不以单文件编译代替。`pnpm test:unit` 运行无需构建的基础测试，`pnpm test:integration` 构建并运行普通 Node 集成测试；具体模块优先按文件运行，不机械跑整层。`pnpm check:static` 只做全仓静态检查。`pnpm check` 保留完整入口，包含静态检查、构建、基础、集成和守卫测试，无需重复追加；Renderer、Electron E2E 和环境测试按改动另选。分组清单见 `node scripts/test.mjs <group> --list`。
 
 ## 完成报告
 

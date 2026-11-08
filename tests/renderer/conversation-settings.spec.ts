@@ -72,6 +72,8 @@ test("cancelled-context preference saves from General settings and keeps its val
     await settings.getByRole("button", { name: "通用", exact: true }).click();
     await expect(toggle).not.toBeChecked();
 
+    // Save/error/pending behavior is covered above. The visual matrix only
+    // checks layout; repeating the same save in every theme adds no coverage.
     for (const colorScheme of ["light", "dark"] as const) {
       await page.emulateMedia({ colorScheme });
       await expect(page.locator("html")).toHaveAttribute(
@@ -97,20 +99,16 @@ test("cancelled-context preference saves from General settings and keeps its val
           path: info.outputPath(`context-off-${colorScheme}-${size.width}.png`),
           animations: "disabled",
         });
-        await toggle.press("Space");
-        await expect(toggle).toHaveAttribute("aria-readonly", "true");
-        await releaseSave();
-        await expect(toggle).toBeChecked();
-        await page.screenshot({
-          path: info.outputPath(`context-on-${colorScheme}-${size.width}.png`),
-          animations: "disabled",
-        });
-        await toggle.press("Space");
-        await expect(toggle).toHaveAttribute("aria-readonly", "true");
-        await releaseSave();
-        await expect(toggle).not.toBeChecked();
       }
     }
+    await toggle.press("Space");
+    await expect(toggle).toHaveAttribute("aria-readonly", "true");
+    await releaseSave();
+    await expect(toggle).toBeChecked();
+    await page.screenshot({
+      path: info.outputPath("context-on-dark-760.png"),
+      animations: "disabled",
+    });
     const search = settings.getByRole("searchbox", { name: "搜索设置分类" });
     await search.fill("上下文");
     await expect(
