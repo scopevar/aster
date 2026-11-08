@@ -1,0 +1,208 @@
+{
+  "version": 1,
+  "title": "交付报告（示例）",
+  "subtitle": "演示数据；请替换为实际任务记录。",
+  "status": "待填写",
+  "pages": [
+    {
+      "id": "overview",
+      "title": "交付概览",
+      "description": "修改目的、当前结论与对应版本。",
+      "sections": [
+        {
+          "id": "overview-summary",
+          "title": "概览",
+          "blocks": [
+            {
+              "type": "callout",
+              "tone": "warn",
+              "title": "示例内容",
+              "text": "尚未填入实际任务、测试、审查和验收记录，不代表任何检查已经通过。"
+            },
+            {
+              "type": "paragraph",
+              "text": "填写本次修改及其原因、当前状态和需要读者决定的事项。"
+            },
+            {
+              "type": "table",
+              "columns": ["信息", "记录"],
+              "rows": [
+                ["需求来源", "未提供"],
+                ["交付版本", "未提供"]
+              ]
+            },
+            {
+              "type": "cards",
+              "items": [
+                {
+                  "title": "测试验证",
+                  "description": "查看执行结果与缺口。",
+                  "href": "#/tests"
+                },
+                {
+                  "title": "演示与验收",
+                  "description": "查看证据和操作步骤。",
+                  "href": "#/acceptance"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "group": "任务与实现"
+    },
+    {
+      "id": "changes",
+      "title": "需求与改动",
+      "description": "逐项对应需求，说明改动边界。",
+      "sections": [
+        {
+          "id": "changes-scope",
+          "title": "范围",
+          "blocks": [
+            {
+              "type": "list",
+              "items": [
+                "填写已完成的需求及主要修改位置。",
+                "说明未完成项、兼容影响或必要操作。"
+              ]
+            }
+          ]
+        }
+      ],
+      "group": "任务与实现"
+    },
+    {
+      "id": "tests",
+      "title": "测试验证",
+      "description": "执行结果与视觉核对分别记录。",
+      "sections": [
+        {
+          "id": "tests-results",
+          "title": "验证记录",
+          "blocks": [
+            {
+              "type": "table",
+              "columns": ["检查", "结果", "说明"],
+              "rows": [
+                ["实际检查项目", "未提供", "请填写命令、范围和实际结果。"]
+              ]
+            },
+            {
+              "type": "details",
+              "title": "命令与输出",
+              "blocks": [
+                {
+                  "type": "code",
+                  "title": "原始记录",
+                  "code": "在此填写实际命令及其输出。\n不要把示例内容当作真实运行日志。"
+                }
+              ]
+            },
+            {
+              "type": "tabs",
+              "items": [
+                {
+                  "title": "自动化",
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "text": "尚未提供自动化验证记录。"
+                    }
+                  ]
+                },
+                {
+                  "title": "视觉核对",
+                  "blocks": [
+                    {
+                      "type": "paragraph",
+                      "text": "尚未提供实际查看的状态、主题、尺寸和结论。"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "group": "验证与审查"
+    },
+    {
+      "id": "review",
+      "title": "代码审查",
+      "description": "汇总已有审查结果；是否执行审查由任务或项目决定。",
+      "sections": [
+        {
+          "id": "review-results",
+          "title": "审查记录",
+          "blocks": [
+            {
+              "type": "callout",
+              "title": "未提供",
+              "text": "没有收到审查记录，尚不能判断审查结论。"
+            },
+            {
+              "type": "paragraph",
+              "text": "如有审查，填写对应版本、发现、处理结果、复核及缺口。"
+            }
+          ]
+        }
+      ],
+      "group": "验证与审查"
+    },
+    {
+      "id": "acceptance",
+      "title": "演示与验收",
+      "description": "直接可查看的证据与可复现操作。",
+      "sections": [
+        {
+          "id": "acceptance-steps",
+          "title": "验收场景",
+          "blocks": [
+            {
+              "type": "steps",
+              "items": [
+                {
+                  "title": "实际入口",
+                  "text": "填写操作入口及必要条件。"
+                },
+                {
+                  "title": "预期与实际",
+                  "text": "填写步骤、预期、实际结果，并附真实证据。"
+                }
+              ]
+            },
+            {
+              "type": "link",
+              "text": "回到验证记录",
+              "href": "#tests-results"
+            }
+          ]
+        }
+      ],
+      "group": "验收与交付"
+    },
+    {
+      "id": "delivery",
+      "title": "风险与交付",
+      "description": "已知限制、交付状态及待确认事项。",
+      "sections": [
+        {
+          "id": "delivery-state",
+          "title": "当前状态",
+          "blocks": [
+            {
+              "type": "list",
+              "items": [
+                "已知限制：未填写。",
+                "交付状态：未提供。",
+                "用户验收结果：未提供。"
+              ]
+            }
+          ]
+        }
+      ],
+      "group": "验收与交付"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "提测报告"
+  short_description: "把已有改动、验证与审查记录填入通用单文件 HTML 报告"
+  default_prompt: "使用 $delivery-report 将已有任务记录整理为章节化 HTML 报告，如实标明缺失证据，并提供可直接打开的文件。"
