@@ -346,6 +346,7 @@ export async function startWorker(
     await publishEndpoint(directory, endpoint);
     return { endpoint, stop };
   } catch (error) {
+    await connections.close();
     await detach();
     server.closeAllConnections();
     if (server.listening)
@@ -358,6 +359,7 @@ export async function startWorker(
   }
   async function drain() {
     closing = true;
+    await connections.close();
     checkController?.abort();
     await controlRequests.close();
     await mounting;

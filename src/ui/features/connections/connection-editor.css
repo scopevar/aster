@@ -60,6 +60,13 @@
   flex-shrink: 0;
   margin-top: 2px;
 }
+.chatgpt-login {
+  display: grid;
+  gap: 8px;
+}
+.chatgpt-login .connection-test-actions {
+  flex-wrap: wrap;
+}
 .connection-section-body > small {
   margin: 0;
 }

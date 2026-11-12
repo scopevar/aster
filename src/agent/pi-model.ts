@@ -47,10 +47,23 @@ export async function configuredModel(
   try {
     signal.throwIfAborted();
     scope =
-      entry.auth === "stored" && apiKey === undefined
+      (entry.auth === "stored" || entry.auth === "chatgpt") &&
+      apiKey === undefined
         ? await new PiCredentials(home).scoped(entry.provider, signal)
         : undefined;
     const credentials = scope ?? new InMemoryCredentialStore();
+    const credential = await credentials.read(entry.provider, { signal });
+    if (
+      entry.provider === "openai" &&
+      credential?.type === "oauth" &&
+      (entry.api !== "native" || entry.baseUrl)
+    )
+      throw new AppError(
+        "invalid_input",
+        "ChatGPT 订阅凭据仅可用于官方 OpenAI 原生接口，请清空 Base URL。",
+      );
+    if (entry.auth === "chatgpt" && credential?.type !== "oauth")
+      throw new AppError("unavailable", "请先在连接设置中登录 ChatGPT 订阅。");
     const runtime = await ModelRuntime.create({
       credentials,
       modelsPath: null,
@@ -60,6 +73,42 @@ export async function configuredModel(
       signal,
     });
     configureProvider(runtime, entry);
+    if (entry.auth === "chatgpt" && !runtime.getModel("openai", entry.model))
+      runtime.registerProvider("openai", {
+        models: [
+          {
+            id: entry.model,
+            name: entry.model,
+            api: "openai-responses",
+            reasoning: entry.thinking !== "off",
+            input: ["text", "image"],
+            cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+            contextWindow: entry.contextWindow,
+            maxTokens: entry.maxTokens,
+          },
+        ],
+      });
+    if (entry.provider === "openai" && credential?.type === "oauth") {
+      const provider = runtime.getProvider("openai");
+      if (!provider)
+        throw new AppError("unavailable", "未找到 OpenAI 提供商。");
+      // Subscription requests require tools in additional_tools input items.
+      // Apply to both bundled and account-only models, retaining native auth.
+      const models = runtime.getModels("openai").map((model) => ({
+        ...model,
+        compat: {
+          ...model.compat,
+          supportsMidConvoSystemMessages: true,
+          supportsAdditionalTools: true,
+          supportsToolSearch: false,
+        },
+      }));
+      runtime.registerNativeProvider({
+        ...provider,
+        getModels: () => models,
+        getAllModels: () => models,
+      });
+    }
     if (entry.auth === "environment" || apiKey !== undefined) {
       const key = apiKey ?? process.env[entry.apiKeyEnv];
       if (!key)

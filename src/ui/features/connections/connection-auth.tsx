@@ -2,6 +2,8 @@ import { Input, Radio, RadioGroup } from "@heroui/react";
 import type { AgentConnection } from "../../../shared/agent-connections.js";
 import { Icon } from "../../components/icons.js";
 import type { ProviderPreset } from "./provider-presets.js";
+import { ChatGPTLogin } from "./chatgpt-login.js";
+import type { ChatGPTAuthStatus } from "../../../shared/chatgpt-auth.js";
 
 export function ConnectionAuth({
   draft,
@@ -11,6 +13,7 @@ export function ConnectionAuth({
   onApiKeyChange,
   hasCredential,
   busy,
+  onChatGPTChange,
 }: {
   draft: AgentConnection;
   preset: ProviderPreset | null;
@@ -19,6 +22,7 @@ export function ConnectionAuth({
   onApiKeyChange(value: string): void;
   hasCredential: boolean;
   busy: boolean;
+  onChatGPTChange(status: ChatGPTAuthStatus): void;
 }) {
   let local = false;
   try {
@@ -31,6 +35,11 @@ export function ConnectionAuth({
   const allowsAnonymous =
     local && ["openai-completions", "openai-responses"].includes(draft.api);
   const options = [
+    {
+      value: "chatgpt",
+      title: "ChatGPT 订阅登录",
+      description: "在浏览器授权使用订阅额度",
+    },
     {
       value: "stored",
       title: "应用凭证库",
@@ -65,6 +74,9 @@ export function ConnectionAuth({
           onChange({
             ...draft,
             auth: option.value,
+            ...(option.value === "chatgpt"
+              ? { api: "native", baseUrl: "" }
+              : {}),
             apiKeyEnv: draft.apiKeyEnv || preset?.env || "CUSTOM_API_KEY",
           });
         }}
@@ -72,9 +84,10 @@ export function ConnectionAuth({
         {options
           .filter(
             (option) =>
-              option.value !== "none" ||
-              allowsAnonymous ||
-              draft.auth === "none",
+              (option.value !== "chatgpt" || draft.provider === "openai") &&
+              (option.value !== "none" ||
+                allowsAnonymous ||
+                draft.auth === "none"),
           )
           .map((option) => (
             <Radio
@@ -95,6 +108,7 @@ export function ConnectionAuth({
             </Radio>
           ))}
       </RadioGroup>
+      {draft.auth === "chatgpt" && <ChatGPTLogin onChange={onChatGPTChange} />}
       {draft.auth === "environment" && (
         <label>
           密钥环境变量名 <span className="provider-required">*</span>

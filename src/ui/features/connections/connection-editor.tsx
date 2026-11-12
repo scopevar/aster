@@ -14,6 +14,7 @@ import { Icon } from "../../components/icons.js";
 import { Tooltip } from "../../components/tooltip.js";
 import type { ProviderPreset } from "./provider-presets.js";
 import "./connection-editor.css";
+import type { ChatGPTAuthStatus } from "../../../shared/chatgpt-auth.js";
 
 export function ConnectionEditor({
   connection,
@@ -44,9 +45,17 @@ export function ConnectionEditor({
   const [error, setError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [apiKey, setApiKey] = useState("");
-  const hasCredential = storedProviders.includes(draft.provider.trim());
+  const [chatgpt, setChatGPT] = useState<ChatGPTAuthStatus>();
+  const hasCredential =
+    draft.provider.trim() === "openai" && chatgpt?.credentialType !== undefined
+      ? chatgpt.credentialType !== "none"
+      : storedProviders.includes(draft.provider.trim());
   const needsKey = draft.auth === "stored" && !hasCredential && !apiKey.trim();
-  const valid = agentConnectionSchema.safeParse(draft).success && !needsKey;
+  const needsLogin =
+    draft.auth === "chatgpt" &&
+    (!chatgpt?.authenticated || chatgpt.state === "pending");
+  const valid =
+    agentConnectionSchema.safeParse(draft).success && !needsKey && !needsLogin;
   const collect = (
     apply: (entry: AgentConnection, apiKey?: string) => void,
   ) => {
@@ -63,6 +72,10 @@ export function ConnectionEditor({
     }
     if (needsKey) {
       setError("请填写 API Key。");
+      return;
+    }
+    if (needsLogin) {
+      setError("请先完成 ChatGPT 订阅登录。");
       return;
     }
     setError("");
@@ -113,6 +126,7 @@ export function ConnectionEditor({
                 variant="secondary"
                 fullWidth
                 aria-label="模型提供商"
+                disabled={draft.auth === "chatgpt"}
                 autoComplete="off"
                 spellCheck={false}
                 value={draft.provider}
@@ -137,7 +151,7 @@ export function ConnectionEditor({
               接口格式 <span className="provider-required">*</span>
               <SettingsSelect
                 label="模型接口"
-                disabled={busy}
+                disabled={busy || draft.auth === "chatgpt"}
                 value={draft.api}
                 onChange={(selection) => {
                   const api = agentConnectionSchema.shape.api.parse(selection);
@@ -177,6 +191,7 @@ export function ConnectionEditor({
                 variant="secondary"
                 fullWidth
                 aria-label="接口地址"
+                disabled={draft.auth === "chatgpt"}
                 autoComplete="off"
                 spellCheck={false}
                 placeholder={
@@ -211,6 +226,7 @@ export function ConnectionEditor({
               apiKey={apiKey}
               onApiKeyChange={setApiKey}
               hasCredential={hasCredential}
+              onChatGPTChange={setChatGPT}
             />
           </div>
         </section>
@@ -226,6 +242,7 @@ export function ConnectionEditor({
                 variant="secondary"
                 fullWidth
                 aria-label="模型"
+                list={draft.auth === "chatgpt" ? "chatgpt-models" : undefined}
                 autoComplete="off"
                 spellCheck={false}
                 value={draft.model}
@@ -236,11 +253,22 @@ export function ConnectionEditor({
                 }
               />
               <small>
-                {draft.api === "native"
-                  ? "使用 Pi 内置目录中的模型 ID；目录外模型请选择兼容接口格式。"
-                  : "按服务商提供的模型 ID 原样填写，每个连接配置一个模型。"}
+                {draft.auth === "chatgpt"
+                  ? "选择账号可用模型，或填写模型 ID 后进行真实推理测试。"
+                  : draft.api === "native"
+                    ? "使用 Pi 内置目录中的模型 ID；目录外模型请选择兼容接口格式。"
+                    : "按服务商提供的模型 ID 原样填写，每个连接配置一个模型。"}
               </small>
             </label>
+            {draft.auth === "chatgpt" && (
+              <datalist id="chatgpt-models">
+                {chatgpt?.models.map((model) => (
+                  <option key={model.id} value={model.id}>
+                    {model.name}
+                  </option>
+                ))}
+              </datalist>
+            )}
           </div>
         </section>
         <div

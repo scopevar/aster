@@ -1,4 +1,5 @@
 export const workerRoutes = {
+  chatGPTAuth: "/chatgpt-auth",
   localWorkspace: "/local-workspace",
   agentConnections: "/agent-connections",
   plugins: "/plugins",
