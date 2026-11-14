@@ -12,6 +12,7 @@ const requestSchema = z.object({
       .passthrough(),
   ),
   model: z.string(),
+  reasoning_effort: z.string().optional(),
   tools: z
     .array(z.object({ function: z.object({ name: z.string() }) }))
     .optional(),
@@ -37,7 +38,7 @@ export async function piModelServer(
       );
       requests.push(request);
       headers.push(req.headers);
-      response.writeHead(200, { "Content-Type": "text/event-stream" });
+      response.setHeader("Content-Type", "text/event-stream");
       const send = (delta: unknown, finish: string | null = null) => {
         response.write(
           "data: " +
