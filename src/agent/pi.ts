@@ -283,16 +283,25 @@ export class PiAgent implements Agent, StructuredModel {
       input.signal.throwIfAborted();
       const message = session.messages.at(-1);
       if (message?.role === "assistant" && message.stopReason === "error")
-        throw Error("Model inference failed");
+        throw new AppError(
+          "unavailable",
+          "Pi 模型请求失败；请检查提供商、认证和模型配置，未自动重试。",
+        );
       const text = session.getLastAssistantText();
-      if (!text) throw Error("Empty inference result");
-      return JSON.parse(text);
-    } catch {
+      if (!text)
+        throw new AppError("unavailable", "模型未返回内容；未自动重试。");
+      try {
+        return JSON.parse(text);
+      } catch {
+        throw new AppError(
+          "unavailable",
+          "Pi 结构化推理未返回有效 JSON；未自动重试。",
+        );
+      }
+    } catch (error) {
       input.signal.throwIfAborted();
-      throw new AppError(
-        "unavailable",
-        "Pi 结构化推理未完成或未返回有效 JSON；未自动重试。",
-      );
+      if (error instanceof AppError) throw error;
+      throw new AppError("unavailable", "Pi 结构化推理未完成；未自动重试。");
     } finally {
       input.signal.removeEventListener("abort", abort);
       try {

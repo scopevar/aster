@@ -92,8 +92,15 @@ export function ModelConnections() {
         setStatus(updated);
         succeeded = alive.current;
       } catch (failure) {
-        if (alive.current) setError(errorMessage(failure));
-        else toast.danger(errorMessage(failure), { timeout: 5000 });
+        const message = errorMessage(failure);
+        if (
+          !alive.current ||
+          input.action === "check" ||
+          input.action === "test" ||
+          input.action === "jev.test"
+        )
+          toast.danger(message, { timeout: 5000 });
+        else setError(message);
       } finally {
         pending.current = false;
       }

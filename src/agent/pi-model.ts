@@ -26,6 +26,10 @@ export function configureProvider(
           cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
           contextWindow: entry.contextWindow,
           maxTokens: entry.maxTokens,
+          // Custom Chat Completions gateways may reject the developer role.
+          ...(entry.api === "openai-completions"
+            ? { compat: { supportsDeveloperRole: false } }
+            : {}),
         },
       ],
     });
