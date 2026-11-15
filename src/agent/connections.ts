@@ -164,6 +164,8 @@ export class AgentConnections {
           request.action === "save" ? request.jevApiKey : undefined,
         );
       const temp = `${this.path}.${randomUUID()}.tmp`;
+      let restoreJevKey: (() => Promise<void>) | undefined;
+      let committed = false;
       await mkdir(dirname(this.path), { recursive: true });
       try {
         const file = await open(temp, "wx", 0o600);
@@ -178,7 +180,7 @@ export class AgentConnections {
           throw new AppError("conflict", "配置已修改，未覆盖文件。");
         if (request.action === "save" && request.jevApiKey) {
           try {
-            await this.jev.saveKey(request.jevApiKey);
+            restoreJevKey = await this.jev.saveKey(request.jevApiKey);
           } catch (error) {
             // Never log the key or raw OS exception, which can include sensitive data.
             const code =
@@ -207,6 +209,7 @@ export class AgentConnections {
         if (configRevision(readAgentConfig(this.path).text) !== revision)
           throw new AppError("conflict", "配置已修改，未覆盖文件。");
         await rename(temp, this.path);
+        committed = true;
         this.changed();
         if (request.action === "save" && request.credential) {
           try {
@@ -225,6 +228,19 @@ export class AgentConnections {
         return await this.response(
           "已保存；下一次运行使用新配置，当前任务保留启动配置。",
         );
+      } catch (error) {
+        if (restoreJevKey && !committed) {
+          try {
+            await restoreJevKey();
+          } catch {
+            console.error("[connections] Jev credential rollback unconfirmed");
+            throw new AppError(
+              "unknown",
+              "Jev 配置未提交，但密钥恢复结果未能确认。请核实执行主机的凭证存储后再使用 Jev。",
+            );
+          }
+        }
+        throw error;
       } finally {
         await unlink(temp).catch((error: unknown) => {
           if (

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { tmpdir } from "node:os";
@@ -9,7 +9,71 @@ import { AgentConnections } from "../src/agent/connections.js";
 import { JevClient } from "../src/agent/jev.js";
 import { jevConfigSchema } from "../src/shared/chat/group-host.js";
 import { agentConnectionsRequestSchema } from "../src/shared/agent-connections.js";
+import { PiCredentials } from "../src/agent/pi-credentials.js";
 import { jevAnswer, jevServer } from "./helpers/jev-server.js";
+
+// A real OS rename failure after sealing a replacement must not pair the old
+// endpoint with that replacement. Existing coverage only failed the key write.
+await test(
+  "Jev restores the prior key when configuration publication fails",
+  { skip: process.platform !== "win32" },
+  async () => {
+    const home = await mkdtemp(join(tmpdir(), "aster-jev-rollback-"));
+    const service = new AgentConnections(home);
+    const path = join(home, "pi-models.json");
+    try {
+      const initial = service.status();
+      const saved = await service.request(
+        {
+          action: "save",
+          revision: initial.revision,
+          config: {
+            ...initial.config,
+            jev: jevConfigSchema.parse({
+              enabled: true,
+              baseUrl: "https://old.example/v1",
+            }),
+          },
+          jevApiKey: "original-key",
+        },
+        AbortSignal.timeout(15000),
+      );
+      await chmod(path, 0o444);
+      await assert.rejects(
+        service.request(
+          {
+            action: "save",
+            revision: saved.revision,
+            config: {
+              ...saved.config,
+              jev: jevConfigSchema.parse({
+                enabled: true,
+                baseUrl: "https://new.example/v1",
+              }),
+            },
+            jevApiKey: "replacement-key",
+          },
+          AbortSignal.timeout(15000),
+        ),
+      );
+      assert.equal(service.status().revision, saved.revision);
+      assert.equal(
+        service.status().config.jev?.baseUrl,
+        "https://old.example/v1",
+      );
+      const credentials = new PiCredentials(join(home, "jev"));
+      const key = await credentials.read("typesafe");
+      assert.equal(
+        key?.type === "api_key" ? key.key : undefined,
+        "original-key",
+      );
+    } finally {
+      await chmod(path, 0o600).catch(() => {});
+      await service.close();
+      await rm(home, { recursive: true, force: true });
+    }
+  },
+);
 
 await test("Jev keeps legacy stored credentials and validates authentication references", () => {
   assert.equal(jevConfigSchema.parse({}).auth, "stored");

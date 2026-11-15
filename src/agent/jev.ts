@@ -118,10 +118,16 @@ export class JevConnection {
     );
   }
   async saveKey(key: string) {
+    const previous = await this.credentials.read("typesafe");
     await this.credentials.modify("typesafe", async () => ({
       type: "api_key",
       key,
     }));
+    return async () => {
+      if (previous)
+        await this.credentials.modify("typesafe", async () => previous);
+      else await this.credentials.delete("typesafe");
+    };
   }
   async client(config: JevConfig, key?: string) {
     if (config.auth === "environment") {
