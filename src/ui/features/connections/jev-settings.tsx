@@ -1,4 +1,4 @@
-import { Button, Input } from "@heroui/react";
+import { Button, Input, Radio, RadioGroup } from "@heroui/react";
 import { useState } from "react";
 import type {
   AgentConnectionsRequest,
@@ -9,14 +9,17 @@ import {
   SettingsDisclosure,
   SettingsSwitch,
 } from "../../components/settings/settings-controls.js";
+import { toast } from "../../components/toast.js";
 
 export function JevSettings({
   status,
   busy,
+  operation,
   request,
 }: {
   status: AgentConnectionsStatus;
   busy: boolean;
+  operation: AgentConnectionsRequest["action"] | null;
   request(value: AgentConnectionsRequest): Promise<boolean>;
 }) {
   const [draft, setDraft] = useState(() =>
@@ -25,13 +28,23 @@ export function JevSettings({
   const [apiKey, setApiKey] = useState("");
   const [error, setError] = useState("");
   const submit = async (test: boolean) => {
+    setError("");
+    const report = (message: string) => {
+      if (test) toast.danger(message, { timeout: 5000 });
+      else setError(message);
+    };
     const config = jevConfigSchema.safeParse(draft);
     if (!config.success) {
-      setError(config.error.issues[0]?.message ?? "Jev 配置无效。");
+      report(config.error.issues[0]?.message ?? "Jev 配置无效。");
       return;
     }
-    if ((test || draft.enabled) && !apiKey.trim() && !status.jevHasKey) {
-      setError("请填写 Jev API Key。");
+    if (
+      draft.auth === "stored" &&
+      (test || draft.enabled) &&
+      !apiKey.trim() &&
+      !status.jevHasKey
+    ) {
+      report("请填写 Jev API Key。");
       return;
     }
     setError("");
@@ -40,13 +53,17 @@ export function JevSettings({
         ? {
             action: "jev.test",
             config: config.data,
-            ...(apiKey.trim() ? { apiKey: apiKey.trim() } : {}),
+            ...(draft.auth === "stored" && apiKey.trim()
+              ? { apiKey: apiKey.trim() }
+              : {}),
           }
         : {
             action: "save",
             revision: status.revision,
             config: { ...status.config, jev: config.data },
-            ...(apiKey.trim() ? { jevApiKey: apiKey.trim() } : {}),
+            ...(draft.auth === "stored" && apiKey.trim()
+              ? { jevApiKey: apiKey.trim() }
+              : {}),
           },
     );
     if (succeeded && !test) setApiKey("");
@@ -106,24 +123,87 @@ export function JevSettings({
                 }
               />
             </label>
-            <label>
-              API Key
-              <Input
-                variant="secondary"
-                fullWidth
-                aria-label="Jev API Key"
-                type="password"
-                autoComplete="new-password"
-                value={apiKey}
-                maxLength={16000}
-                placeholder={
-                  status.jevHasKey ? "已配置，留空保持不变" : "输入 API Key"
-                }
-                onChange={(event) => setApiKey(event.target.value)}
-              />
-            </label>
+            <RadioGroup
+              className="connection-auth-options"
+              aria-label="Jev 密钥来源"
+              value={draft.auth}
+              onChange={(value) => {
+                if (value !== "stored" && value !== "environment") return;
+                setDraft({ ...draft, auth: value });
+                setApiKey("");
+                setError("");
+              }}
+              isDisabled={busy}
+            >
+              {[
+                {
+                  value: "stored",
+                  title: "应用凭证库",
+                  description: "使用本应用加密保存的认证",
+                },
+                {
+                  value: "environment",
+                  title: "环境变量",
+                  description: "引用执行主机中的密钥",
+                },
+              ].map((option) => (
+                <Radio
+                  key={option.value}
+                  value={option.value}
+                  aria-label={option.title}
+                >
+                  <Radio.Content>
+                    <Radio.Control>
+                      <Radio.Indicator />
+                    </Radio.Control>
+                    <span>
+                      <strong>{option.title}</strong>
+                      <small>{option.description}</small>
+                    </span>
+                  </Radio.Content>
+                </Radio>
+              ))}
+            </RadioGroup>
+            {draft.auth === "environment" ? (
+              <label className="connection-auth-field">
+                密钥环境变量名
+                <Input
+                  variant="secondary"
+                  fullWidth
+                  aria-label="Jev 密钥环境变量名"
+                  value={draft.apiKeyEnv}
+                  maxLength={100}
+                  autoComplete="off"
+                  spellCheck={false}
+                  onChange={(event) =>
+                    setDraft({ ...draft, apiKeyEnv: event.target.value })
+                  }
+                />
+                <small>
+                  填写变量名称，密钥值在执行主机配置；修改后需重启后台。
+                </small>
+              </label>
+            ) : (
+              <label className="connection-auth-field">
+                API Key
+                <Input
+                  variant="secondary"
+                  fullWidth
+                  aria-label="Jev API Key"
+                  type="password"
+                  autoComplete="new-password"
+                  value={apiKey}
+                  maxLength={16000}
+                  placeholder={
+                    status.jevHasKey ? "已配置，留空保持不变" : "输入 API Key"
+                  }
+                  onChange={(event) => setApiKey(event.target.value)}
+                />
+              </label>
+            )}
             <small className="connection-auth-help">
-              密钥加密保存在执行主机。启用后，群聊信息及审核所需的当前指令、脚本、附件名称和联网域名会发送到此地址。
+              {draft.auth === "stored" && "密钥加密保存在执行主机。"}
+              启用后，群聊信息及审核所需的当前指令、脚本、附件名称和联网域名会发送到此地址。
             </small>
             {error && (
               <p className="error" role="alert">
@@ -139,10 +219,10 @@ export function JevSettings({
                   void submit(true);
                 }}
               >
-                测试 Jev 连接
+                {operation === "jev.test" ? "测试中…" : "测试 Jev 连接"}
               </Button>
               <Button variant="primary" type="submit" isDisabled={busy}>
-                保存 Jev 配置
+                {operation === "save" ? "保存中…" : "保存 Jev 配置"}
               </Button>
             </div>
           </div>

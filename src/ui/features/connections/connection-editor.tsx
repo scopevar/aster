@@ -12,6 +12,7 @@ import {
 import { ConnectionAuth } from "./connection-auth.js";
 import { Icon } from "../../components/icons.js";
 import { Tooltip } from "../../components/tooltip.js";
+import { toast } from "../../components/toast.js";
 import type { ProviderPreset } from "./provider-presets.js";
 import "./connection-editor.css";
 import type { ChatGPTAuthStatus } from "../../../shared/chatgpt-auth.js";
@@ -21,6 +22,7 @@ export function ConnectionEditor({
   preset,
   isNew,
   busy,
+  operation,
   serverError,
   onSave,
   onCheck,
@@ -33,6 +35,7 @@ export function ConnectionEditor({
   preset: ProviderPreset | null;
   isNew: boolean;
   busy: boolean;
+  operation: string | null;
   serverError: string;
   onSave(value: AgentConnection, apiKey?: string): void;
   onCheck(value: AgentConnection, apiKey?: string): void;
@@ -58,10 +61,15 @@ export function ConnectionEditor({
     agentConnectionSchema.safeParse(draft).success && !needsKey && !needsLogin;
   const collect = (
     apply: (entry: AgentConnection, apiKey?: string) => void,
+    testing = false,
   ) => {
+    const report = (message: string) => {
+      if (testing) toast.danger(message, { timeout: 5000 });
+      else setError(message);
+    };
     const parsed = agentConnectionSchema.safeParse(draft);
     if (!parsed.success) {
-      setError(
+      report(
         !draft.id.trim()
           ? "请填写连接名称。"
           : !draft.model.trim()
@@ -71,11 +79,11 @@ export function ConnectionEditor({
       return;
     }
     if (needsKey) {
-      setError("请填写 API Key。");
+      report("请填写 API Key。");
       return;
     }
     if (needsLogin) {
-      setError("请先完成 ChatGPT 订阅登录。");
+      report("请先完成 ChatGPT 订阅登录。");
       return;
     }
     setError("");
@@ -283,9 +291,9 @@ export function ConnectionEditor({
                 variant="secondary"
                 size="sm"
                 type="button"
-                onPress={() => collect(onCheck)}
+                onPress={() => collect(onCheck, true)}
               >
-                检查配置
+                {operation === "check" ? "检查中…" : "检查配置"}
               </Button>
             </Tooltip>
             <Tooltip content="向所选模型发送一次测试请求">
@@ -293,9 +301,9 @@ export function ConnectionEditor({
                 variant="secondary"
                 size="sm"
                 type="button"
-                onPress={() => collect(onTest)}
+                onPress={() => collect(onTest, true)}
               >
-                真实推理测试
+                {operation === "test" ? "测试中…" : "真实推理测试"}
               </Button>
             </Tooltip>
           </div>
@@ -394,17 +402,7 @@ export function ConnectionEditor({
         )}
         <footer className="connection-editor-footer">
           <div className="connection-footer-row">
-            <div className="connection-save-actions">
-              <Button variant="ghost" type="button" onPress={onCancel}>
-                取消
-              </Button>
-              <Button variant="primary" type="submit" isDisabled={!valid}>
-                {busy ? "处理中…" : isNew ? "添加供应商" : "保存配置"}
-              </Button>
-            </div>
-          </div>
-          {!isNew && (
-            <div className="connection-footer-meta">
+            {!isNew && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -412,11 +410,23 @@ export function ConnectionEditor({
                 type="button"
                 onPress={() => setConfirmDelete(true)}
               >
-                <Icon name="trash" size={12} />
+                <Icon name="trash" size={14} />
                 删除连接
               </Button>
+            )}
+            <div className="connection-save-actions">
+              <Button variant="ghost" type="button" onPress={onCancel}>
+                取消
+              </Button>
+              <Button variant="primary" type="submit" isDisabled={!valid}>
+                {operation === "save"
+                  ? "保存中…"
+                  : isNew
+                    ? "添加供应商"
+                    : "保存配置"}
+              </Button>
             </div>
-          )}
+          </div>
         </footer>
       </fieldset>
       {confirmDelete && (

@@ -48,6 +48,9 @@ export function ModelConnections() {
   const { busy: operations, run: mutate } = useSettingsMutation();
   const busy = operations.has("connections");
   const [query, setQuery] = useState("");
+  const [operation, setOperation] = useState<
+    AgentConnectionsRequest["action"] | null
+  >(null);
   const [toggling, setToggling] = useState<Set<string>>(new Set());
   const toggleIds = useRef(new Set<string>());
   const toggleQueue = useRef(Promise.resolve());
@@ -58,6 +61,7 @@ export function ModelConnections() {
   const request = async (input: AgentConnectionsRequest): Promise<boolean> => {
     if (pending.current) return false;
     pending.current = true;
+    setOperation(input.action);
     setError("");
     let succeeded = false;
     await mutate("connections", async () => {
@@ -65,13 +69,15 @@ export function ModelConnections() {
         const next = agentConnectionsStatusSchema.parse(
           await desktop.agentConnections(input),
         );
-        if (alive.current && input.action !== "status" && next.notice)
+        if (alive.current && input.action !== "status")
           toast.success(
             input.action === "save"
               ? "已保存，下一次运行生效"
               : input.action === "check"
                 ? "配置检查通过，未向模型发出请求"
-                : "真实推理测试通过",
+                : input.action === "jev.test"
+                  ? "Jev 连接与判断测试通过"
+                  : "真实推理测试通过",
             { timeout: 5000 },
           );
         // Checks must not grant an old draft a newer file revision.
@@ -103,6 +109,7 @@ export function ModelConnections() {
         else setError(message);
       } finally {
         pending.current = false;
+        if (alive.current) setOperation(null);
       }
     });
     return succeeded;
@@ -252,6 +259,7 @@ export function ModelConnections() {
       preset={editor.preset}
       isNew={editor.originalId === null}
       busy={busy}
+      operation={operation}
       serverError={error}
       storedProviders={status?.storedProviders ?? []}
       onSave={update}
@@ -436,7 +444,12 @@ export function ModelConnections() {
           </>
         ))}
       {screen === "list" && status && (
-        <JevSettings status={status} busy={busy} request={request} />
+        <JevSettings
+          status={status}
+          busy={busy}
+          operation={operation}
+          request={request}
+        />
       )}
       {!adding && editorView}
       {adding && (
