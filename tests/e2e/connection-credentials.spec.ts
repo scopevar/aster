@@ -6,6 +6,93 @@ import { randomUUID } from "node:crypto";
 import { piModelServer } from "../helpers/pi-model-server.js";
 import { selectSetting } from "../helpers/settings-controls.js";
 import { openDesktop } from "../helpers/local-desktop.js";
+import { jevAnswer, jevServer } from "../helpers/jev-server.js";
+
+// Renderer and Node tests cannot prove that both credential sources reach the
+// resident daemon, survive Electron restarts, and keep secrets out of responses.
+test("Jev credential sources reach the daemon and saved keys survive restart", async ({
+  desktop,
+}, info) => {
+  const remote = await jevServer((_request, response) =>
+    jevAnswer(response, "ready"),
+  );
+  const options = { env: { ASTER_E2E_JEV_KEY: "jev-environment-fixture" } };
+  const openSettings = async (
+    app: Awaited<ReturnType<typeof desktop.launch>>,
+  ) => {
+    const page = await openDesktop(app);
+    await page.getByRole("button", { name: /^应用菜单/ }).click();
+    await page.getByRole("menuitem", { name: "设置", exact: true }).click();
+    await page.getByRole("button", { name: "模型与连接", exact: true }).click();
+    await page.getByText("Jev 辅助决策", { exact: true }).click();
+    return page;
+  };
+  try {
+    let page = await openSettings(await desktop.launch(options));
+    let form = page.getByRole("form", { name: "Jev 配置", exact: true });
+    await form
+      .getByLabel("Jev Base URL", { exact: true })
+      .fill(remote.config.baseUrl);
+    await form
+      .getByLabel("Jev API Key", { exact: true })
+      .fill("jev-stored-fixture");
+    await form
+      .getByRole("button", { name: "保存 Jev 配置", exact: true })
+      .click();
+    await expect(
+      page.getByText("已保存，下一次运行生效", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      form.getByLabel("Jev API Key", { exact: true }),
+    ).toHaveAttribute("placeholder", "已配置，留空保持不变");
+    await desktop.stop();
+    page = await openSettings(await desktop.launch(options));
+    form = page.getByRole("form", { name: "Jev 配置", exact: true });
+    await form
+      .getByRole("button", { name: "测试 Jev 连接", exact: true })
+      .click();
+    await expect(
+      page.getByText("Jev 连接与判断测试通过", { exact: true }),
+    ).toBeVisible();
+    expect(remote.authorizations.at(-1)).toBe("Bearer jev-stored-fixture");
+    await form.getByText("环境变量", { exact: true }).click();
+    await form
+      .getByLabel("Jev 密钥环境变量名", { exact: true })
+      .fill("ASTER_E2E_JEV_KEY");
+    await form
+      .getByRole("button", { name: "保存 Jev 配置", exact: true })
+      .click();
+    await expect(
+      page.getByText("已保存，下一次运行生效", { exact: true }),
+    ).toBeVisible();
+    await form
+      .getByRole("button", { name: "测试 Jev 连接", exact: true })
+      .click();
+    await expect
+      .poll(() => remote.authorizations.at(-1))
+      .toBe("Bearer jev-environment-fixture");
+    const status = await page.evaluate(() =>
+      window.aster.agentConnections({ action: "status" }),
+    );
+    expect(status.success).toBe(true);
+    expect(JSON.stringify(status)).not.toMatch(
+      /jev-stored-fixture|jev-environment-fixture/,
+    );
+    expect(
+      await readFile(
+        join(desktop.directory, "agent", "pi-models.json"),
+        "utf8",
+      ),
+    ).not.toMatch(/jev-stored-fixture|jev-environment-fixture/);
+    await page.screenshot({
+      path: info.outputPath("jev-environment-desktop.png"),
+      animations: "disabled",
+    });
+  } finally {
+    await desktop.stop();
+    await remote.close();
+  }
+});
 
 test("saved API keys support attachments, cancellation and restart without leaking secrets or replaying requests", async ({
   desktop,
@@ -64,7 +151,12 @@ test("saved API keys support attachments, cancellation and restart without leaki
       add.getByRole("button", { name: "添加供应商", exact: true }),
     ).toBeDisabled();
     await add.getByRole("button", { name: "检查配置", exact: true }).click();
-    await expect(add.getByRole("alert")).toHaveText("请填写 API Key。");
+    const missingKey = page.getByRole("alertdialog", {
+      name: "请填写 API Key。",
+      exact: true,
+    });
+    await expect(missingKey).toBeVisible();
+    await missingKey.getByRole("button", { name: "关闭提示" }).click();
     await key.fill("desktop-fixture-key");
     await add.getByRole("button", { name: /配置预览/ }).click();
     await expect(

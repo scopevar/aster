@@ -3,6 +3,12 @@ import { z } from "zod";
 export const jevConfigSchema = z
   .object({
     enabled: z.boolean().default(false),
+    auth: z.enum(["stored", "environment"]).default("stored"),
+    apiKeyEnv: z
+      .string()
+      .max(100)
+      .regex(/^[A-Za-z_][A-Za-z0-9_]*$/, "请输入有效的密钥环境变量名。")
+      .default("JEV_API_KEY"),
     baseUrl: z
       .string()
       .trim()

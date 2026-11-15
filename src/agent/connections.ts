@@ -109,6 +109,7 @@ export class AgentConnections {
     if (this.busy || this.chatgpt.active)
       throw new AppError("conflict", "模型配置或 ChatGPT 登录正在进行。");
     this.busy = true;
+    console.info(`[connections] ${request.action} started`);
     try {
       if (request.action === "jev.test") {
         await this.jev.test(request.config, request.apiKey, signal);
@@ -157,13 +158,14 @@ export class AgentConnections {
             };
       if (revision !== configRevision(current.text))
         throw new AppError("conflict", "配置已修改，请重新读取后保存。");
-      if (
-        config.jev?.enabled &&
-        !(request.action === "save" && request.jevApiKey) &&
-        !(await this.jev.hasKey())
-      )
-        throw new AppError("invalid_input", "启用 Jev 前请填写 API Key。");
+      if (config.jev?.enabled)
+        await this.jev.client(
+          config.jev,
+          request.action === "save" ? request.jevApiKey : undefined,
+        );
       const temp = `${this.path}.${randomUUID()}.tmp`;
+      let restoreJevKey: (() => Promise<void>) | undefined;
+      let committed = false;
       await mkdir(dirname(this.path), { recursive: true });
       try {
         const file = await open(temp, "wx", 0o600);
@@ -176,18 +178,39 @@ export class AgentConnections {
         signal.throwIfAborted();
         if (configRevision(readAgentConfig(this.path).text) !== revision)
           throw new AppError("conflict", "配置已修改，未覆盖文件。");
-        await rename(temp, this.path);
-        this.changed();
         if (request.action === "save" && request.jevApiKey) {
           try {
-            await this.jev.saveKey(request.jevApiKey);
-          } catch {
+            restoreJevKey = await this.jev.saveKey(request.jevApiKey);
+          } catch (error) {
+            // Never log the key or raw OS exception, which can include sensitive data.
+            const code =
+              error instanceof Error &&
+              "code" in error &&
+              [
+                "EACCES",
+                "EPERM",
+                "EIO",
+                "EBUSY",
+                "ENOSPC",
+                "EISDIR",
+                "ENOENT",
+              ].includes(String(error.code))
+                ? error.code
+                : "secure-storage";
+            console.error(`[connections] Jev credential save failed (${code})`);
             throw new AppError(
-              "unknown",
-              "Jev 配置已保存，但密钥保存结果未确认，请重新读取设置后核实。",
+              "unavailable",
+              "Jev API Key 保存失败，配置未更改。请检查执行主机安全存储后重试，或改用环境变量。",
             );
           }
         }
+        // A key write must succeed before publishing a configuration that needs it.
+        signal.throwIfAborted();
+        if (configRevision(readAgentConfig(this.path).text) !== revision)
+          throw new AppError("conflict", "配置已修改，未覆盖文件。");
+        await rename(temp, this.path);
+        committed = true;
+        this.changed();
         if (request.action === "save" && request.credential) {
           try {
             const { provider, key } = request.credential;
@@ -205,6 +228,19 @@ export class AgentConnections {
         return await this.response(
           "已保存；下一次运行使用新配置，当前任务保留启动配置。",
         );
+      } catch (error) {
+        if (restoreJevKey && !committed) {
+          try {
+            await restoreJevKey();
+          } catch {
+            console.error("[connections] Jev credential rollback unconfirmed");
+            throw new AppError(
+              "unknown",
+              "Jev 配置未提交，但密钥恢复结果未能确认。请核实执行主机的凭证存储后再使用 Jev。",
+            );
+          }
+        }
+        throw error;
       } finally {
         await unlink(temp).catch((error: unknown) => {
           if (
@@ -217,7 +253,13 @@ export class AgentConnections {
             throw error;
         });
       }
+    } catch (error) {
+      console.error(
+        `[connections] ${request.action} failed (${error instanceof AppError ? error.code : "internal"})`,
+      );
+      throw error;
     } finally {
+      console.info(`[connections] ${request.action} finished`);
       this.busy = false;
     }
   }

@@ -1,13 +1,15 @@
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { inspectDevEnvironment } from "./dev-environment.mjs";
 import { runNode } from "./dev-process.mjs";
 import { loadProjectEnv } from "./project-env.mjs";
+import { followDaemonLog } from "./dev-logs.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const args = process.argv.slice(2).filter((argument) => argument !== "--");
 const cancellation = new AbortController();
+let stopLogs;
 const interrupt = () =>
   cancellation.abort(new DOMException("启动或桌面运行已取消。", "AbortError"));
 process.on("SIGINT", interrupt);
@@ -50,6 +52,10 @@ try {
       );
       process.exitCode = built;
     } else {
+      const directory = resolve(
+        process.env.ASTER_DATA_DIR ?? join(root, ".runtime/aster"),
+      );
+      stopLogs = await followDaemonLog(join(directory, "daemon.log"));
       const electronVite = "node_modules/electron-vite/bin/electron-vite.js";
       process.exitCode = await run(
         existsSync(join(root, electronVite))
@@ -74,6 +80,7 @@ try {
     process.exitCode = 1;
   }
 } finally {
+  await stopLogs?.();
   process.removeListener("SIGINT", interrupt);
   process.removeListener("SIGTERM", interrupt);
 }

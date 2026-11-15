@@ -129,8 +129,7 @@
 }
 .connection-footer-row,
 .connection-test-actions,
-.connection-save-actions,
-.connection-footer-meta {
+.connection-save-actions {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -149,19 +148,35 @@
   color: var(--muted);
 }
 .connection-editor[aria-busy="true"] .input:disabled,
-.connection-editor[aria-busy="true"] .select__trigger:disabled {
+.connection-editor[aria-busy="true"] .select__trigger:disabled,
+.connection-editor[aria-busy="true"] .button,
+.connection-editor[aria-busy="true"] .radio,
+.connection-editor[aria-busy="true"] .switch {
   opacity: 1;
 }
-.connection-footer-row,
-.connection-footer-meta {
+.connection-footer-row {
   justify-content: space-between;
   gap: 16px;
 }
 .connection-editor-footer {
-  display: grid;
-  gap: 8px;
   padding-top: 16px;
   border-top: 1px solid var(--line);
+}
+.connection-validation .button {
+  min-width: 88px;
+}
+.connection-validation .button:last-child {
+  min-width: 108px;
+}
+.jev-settings .connection-footer-row,
+.jev-settings .connection-auth-options,
+.jev-settings .connection-auth-field,
+.jev-settings .connection-test-actions,
+.jev-settings .error {
+  grid-column: 1 / -1;
+}
+.jev-settings .connection-test-actions .button {
+  min-width: 116px;
 }
 .connection-delete-action {
   flex-shrink: 0;

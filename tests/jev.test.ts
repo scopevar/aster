@@ -1,12 +1,203 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { AgentConnections } from "../src/agent/connections.js";
 import { JevClient } from "../src/agent/jev.js";
 import { jevConfigSchema } from "../src/shared/chat/group-host.js";
+import { agentConnectionsRequestSchema } from "../src/shared/agent-connections.js";
+import { PiCredentials } from "../src/agent/pi-credentials.js";
 import { jevAnswer, jevServer } from "./helpers/jev-server.js";
+
+// A real OS rename failure after sealing a replacement must not pair the old
+// endpoint with that replacement. Existing coverage only failed the key write.
+await test(
+  "Jev restores the prior key when configuration publication fails",
+  { skip: process.platform !== "win32" },
+  async () => {
+    const home = await mkdtemp(join(tmpdir(), "aster-jev-rollback-"));
+    const service = new AgentConnections(home);
+    const path = join(home, "pi-models.json");
+    try {
+      const initial = service.status();
+      const saved = await service.request(
+        {
+          action: "save",
+          revision: initial.revision,
+          config: {
+            ...initial.config,
+            jev: jevConfigSchema.parse({
+              enabled: true,
+              baseUrl: "https://old.example/v1",
+            }),
+          },
+          jevApiKey: "original-key",
+        },
+        AbortSignal.timeout(15000),
+      );
+      await chmod(path, 0o444);
+      await assert.rejects(
+        service.request(
+          {
+            action: "save",
+            revision: saved.revision,
+            config: {
+              ...saved.config,
+              jev: jevConfigSchema.parse({
+                enabled: true,
+                baseUrl: "https://new.example/v1",
+              }),
+            },
+            jevApiKey: "replacement-key",
+          },
+          AbortSignal.timeout(15000),
+        ),
+      );
+      assert.equal(service.status().revision, saved.revision);
+      assert.equal(
+        service.status().config.jev?.baseUrl,
+        "https://old.example/v1",
+      );
+      const credentials = new PiCredentials(join(home, "jev"));
+      const key = await credentials.read("typesafe");
+      assert.equal(
+        key?.type === "api_key" ? key.key : undefined,
+        "original-key",
+      );
+    } finally {
+      await chmod(path, 0o600).catch(() => {});
+      await service.close();
+      await rm(home, { recursive: true, force: true });
+    }
+  },
+);
+
+await test("Jev keeps legacy stored credentials and validates authentication references", () => {
+  assert.equal(jevConfigSchema.parse({}).auth, "stored");
+  for (const apiKeyEnv of ["", "1KEY", "TEAM-KEY", "KEY VALUE"]) {
+    assert.equal(
+      jevConfigSchema.safeParse({ auth: "environment", apiKeyEnv }).success,
+      false,
+    );
+  }
+  const config = jevConfigSchema.parse({
+    auth: "environment",
+    apiKeyEnv: "TEAM_KEY",
+  });
+  assert.equal(
+    agentConnectionsRequestSchema.safeParse({ action: "jev.test", config })
+      .success,
+    true,
+  );
+  assert.equal(
+    agentConnectionsRequestSchema.safeParse({
+      action: "jev.test",
+      config,
+      apiKey: "wrong-source",
+    }).success,
+    false,
+  );
+  assert.equal(
+    agentConnectionsRequestSchema.safeParse({
+      action: "save",
+      revision: "0",
+      config: { defaultAgent: "", connections: [], jev: config },
+      jevApiKey: "wrong-source",
+    }).success,
+    false,
+  );
+});
+
+// A failed credential write must leave the prior configuration revision usable.
+await test("Jev key storage failure does not commit configuration and permits retry", async () => {
+  const home = await mkdtemp(join(tmpdir(), "aster-jev-failure-"));
+  const service = new AgentConnections(home);
+  const blocked = join(home, "jev", "pi-auth.sealed");
+  try {
+    const initial = await service.request(
+      { action: "status" },
+      AbortSignal.timeout(15000),
+    );
+    await mkdir(blocked, { recursive: true });
+    await assert.rejects(
+      service.request(
+        {
+          action: "save",
+          revision: initial.revision,
+          config: {
+            ...initial.config,
+            jev: jevConfigSchema.parse({ enabled: true }),
+          },
+          jevApiKey: "test-key",
+        },
+        AbortSignal.timeout(15000),
+      ),
+      /API Key 保存失败，配置未更改/,
+    );
+    assert.equal(service.status().revision, initial.revision);
+    await rm(blocked, { recursive: true });
+    const saved = await service.request(
+      { action: "save", revision: initial.revision, config: initial.config },
+      AbortSignal.timeout(15000),
+    );
+    assert.equal(saved.config.jev, undefined);
+  } finally {
+    await service.close();
+    await rm(home, { recursive: true, force: true });
+  }
+});
+
+// A child owns its environment; the real service and native HTTP transport resolve the key.
+await test("Jev environment authentication persists only the variable name and reports missing keys", async () => {
+  const home = await mkdtemp(join(tmpdir(), "aster-jev-env-"));
+  const remote = await jevServer((_request, response) =>
+    jevAnswer(response, "ready"),
+  );
+  const code = `
+    import assert from 'node:assert/strict';
+    import { AgentConnections } from './src/agent/connections.ts';
+    const service = new AgentConnections(${JSON.stringify(home)});
+    try {
+      const status = await service.request({action:'status'}, AbortSignal.timeout(15000));
+      const config = {...${JSON.stringify(remote.config)}, auth:'environment', apiKeyEnv:'ASTER_TEST_JEV_KEY'};
+      if (!process.env.ASTER_TEST_JEV_KEY) {
+        await assert.rejects(service.request({action:'jev.test',config}, AbortSignal.timeout(15000)), /环境变量.*未配置/);
+      } else {
+        const saved = await service.request({action:'save',revision:status.revision,config:{...status.config,jev:config}},AbortSignal.timeout(15000));
+        await service.request({action:'jev.test',config:saved.config.jev},AbortSignal.timeout(15000));
+        assert.equal(saved.jevHasKey, false);
+      }
+    } finally { await service.close(); }
+  `;
+  try {
+    for (const key of ["environment-test-secret", ""]) {
+      await promisify(execFile)(
+        process.execPath,
+        ["--import", "tsx", "--input-type=module", "-e", code],
+        {
+          env: { ...process.env, ASTER_TEST_JEV_KEY: key },
+          timeout: 25000,
+        },
+      );
+    }
+    assert.equal(
+      remote.authorizations.at(-1),
+      "Bearer environment-test-secret",
+    );
+    const saved = await readFile(join(home, "pi-models.json"), "utf8");
+    assert.match(saved, /ASTER_TEST_JEV_KEY/);
+    assert.doesNotMatch(saved, /environment-test-secret/);
+    await assert.rejects(readFile(join(home, "jev", "pi-auth.sealed")), {
+      code: "ENOENT",
+    });
+  } finally {
+    await remote.close();
+    await rm(home, { recursive: true, force: true });
+  }
+});
 
 // Configuration and transport boundaries own validation, credential secrecy and truthful failures.
 await test(

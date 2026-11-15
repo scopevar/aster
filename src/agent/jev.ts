@@ -1,7 +1,11 @@
 import { join } from "node:path";
 import { z } from "zod";
 import { AppError } from "../shared/core.js";
-import { jevConfigSchema, type JevConfig } from "../shared/chat/group-host.js";
+import {
+  jevConfigSchema,
+  jevKeySchema,
+  type JevConfig,
+} from "../shared/chat/group-host.js";
 import { PiCredentials } from "./pi-credentials.js";
 
 const answerSchema = z.object({
@@ -114,12 +118,27 @@ export class JevConnection {
     );
   }
   async saveKey(key: string) {
+    const previous = await this.credentials.read("typesafe");
     await this.credentials.modify("typesafe", async () => ({
       type: "api_key",
       key,
     }));
+    return async () => {
+      if (previous)
+        await this.credentials.modify("typesafe", async () => previous);
+      else await this.credentials.delete("typesafe");
+    };
   }
   async client(config: JevConfig, key?: string) {
+    if (config.auth === "environment") {
+      const resolved = jevKeySchema.safeParse(process.env[config.apiKeyEnv]);
+      if (!resolved.success)
+        throw new AppError(
+          "unavailable",
+          `Jev 环境变量 ${config.apiKeyEnv} 未配置或密钥无效，请在执行主机设置后重启后台。`,
+        );
+      return new JevClient(config, resolved.data);
+    }
     const credential = key
       ? undefined
       : await this.credentials.read("typesafe");

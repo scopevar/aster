@@ -20,6 +20,7 @@ async function fixture() {
   await mkdir(join(root, "dist", "desktop"), { recursive: true });
   await writeFile(join(root, "package.json"), '{"type":"module"}');
   await copyFile("scripts/dev.mjs", join(root, "scripts", "dev.mjs"));
+  await copyFile("scripts/dev-logs.mjs", join(root, "scripts", "dev-logs.mjs"));
   await copyFile(
     "scripts/project-env.mjs",
     join(root, "scripts", "project-env.mjs"),
@@ -42,14 +43,18 @@ async function fixture() {
   );
   return { root, history, mark };
 }
-async function run(root: string, args: string[] = []) {
-  const child = spawn(process.execPath, [
-    join(root, "scripts", "dev.mjs"),
-    ...args,
-  ]);
+async function run(root: string, args: string[] = [], finishOn?: string) {
+  const child = spawn(
+    process.execPath,
+    [join(root, "scripts", "dev.mjs"), ...args],
+    {
+      env: { ...process.env, ASTER_DATA_DIR: join(root, ".runtime", "aster") },
+    },
+  );
   let output = "";
   child.stdout.setEncoding("utf8").on("data", (text: string) => {
     output += text;
+    if (finishOn && output.includes(finishOn)) child.stdin.end("exit");
   });
   child.stderr.setEncoding("utf8").on("data", (text: string) => {
     output += text;
@@ -85,6 +90,33 @@ await test("dev builds and connects without stopping the daemon; doctor remains 
     const restarted = await run(root);
     assert.equal(restarted.code, 7);
     assert.equal(await readFile(history, "utf8"), "build\nlaunch\n");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+// The controller only exits after its parent receives the followed log line.
+// Reading the file once at exit cannot satisfy this contract.
+await test("dev prints new daemon logs without replaying old history", async () => {
+  const { root, mark } = await fixture();
+  try {
+    const directory = join(root, ".runtime", "aster");
+    await mkdir(directory, { recursive: true });
+    const log = join(directory, "daemon.log");
+    await writeFile(log, "old-daemon-history\n");
+    await writeFile(join(root, "scripts", "build.mjs"), mark("build"));
+    await writeFile(
+      join(root, "dist", "desktop", "launcher.js"),
+      `import {appendFileSync} from 'node:fs';
+       const timeout = setTimeout(() => process.exit(9), 15000);
+       process.stdin.once('data', () => { clearTimeout(timeout); process.stdin.pause(); });
+       appendFileSync(${JSON.stringify(log)}, '后台测试完成\\n'); console.log('controller-ready');`,
+    );
+    const result = await run(root, [], "后台测试完成");
+    assert.equal(result.code, 0);
+    assert.match(result.output, /controller-ready/);
+    assert.match(result.output, /后台测试完成/);
+    assert.doesNotMatch(result.output, /old-daemon-history/);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

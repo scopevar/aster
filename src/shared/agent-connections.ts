@@ -130,7 +130,11 @@ export const agentConnectionsRequestSchema = z.discriminatedUnion("action", [
       config: jevConfigSchema,
       apiKey: jevKeySchema.optional(),
     })
-    .strict(),
+    .strict()
+    .refine(
+      (value) => value.apiKey === undefined || value.config.auth === "stored",
+      "只有应用凭证库可提交 Jev API Key。",
+    ),
   z.object({ action: z.literal("status") }).strict(),
   z
     .object({
@@ -151,6 +155,11 @@ export const agentConnectionsRequestSchema = z.discriminatedUnion("action", [
         .optional(),
     })
     .strict()
+    .refine(
+      (value) =>
+        value.jevApiKey === undefined || value.config.jev?.auth === "stored",
+      "密钥必须属于使用应用凭证库的 Jev 配置。",
+    )
     .refine(
       (value) =>
         !value.credential ||

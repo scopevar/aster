@@ -49,6 +49,17 @@ test("connection inference test failures appear as toasts instead of inline form
   await page.getByRole("button", { name: "添加连接", exact: true }).click();
   const dialog = page.locator(".connection-add-dialog");
   await dialog.getByRole("button", { name: /自定义配置/ }).click();
+  await dialog.getByLabel("连接名称", { exact: true }).fill("");
+  await dialog
+    .getByRole("button", { name: "真实推理测试", exact: true })
+    .click();
+  const localFailure = page.getByRole("alertdialog", {
+    name: "请填写连接名称。",
+    exact: true,
+  });
+  await expect(localFailure).toBeVisible();
+  await expect(dialog.locator(".connection-editor .error")).toHaveCount(0);
+  await localFailure.getByRole("button", { name: "关闭提示" }).click();
   await dialog.getByLabel("连接名称", { exact: true }).fill("mify");
   await dialog.getByLabel("模型提供商", { exact: true }).fill("mify");
   await dialog
@@ -110,6 +121,16 @@ test("connection inference test failures appear as toasts instead of inline form
   });
   await dialog.getByRole("button", { name: "取消", exact: true }).click();
   await page.getByText("Jev 辅助决策", { exact: true }).click();
+  await page
+    .getByRole("button", { name: "测试 Jev 连接", exact: true })
+    .click();
+  const missingJevKey = page.getByRole("alertdialog", {
+    name: "请填写 Jev API Key。",
+    exact: true,
+  });
+  await expect(missingJevKey).toBeVisible();
+  await expect(settings.getByRole("alert")).toHaveCount(0);
+  await missingJevKey.getByRole("button", { name: "关闭提示" }).click();
   await page.getByLabel("Jev API Key", { exact: true }).fill("draft-jev-key");
   await page
     .getByRole("button", { name: "测试 Jev 连接", exact: true })
